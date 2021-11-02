@@ -20,7 +20,6 @@
     
     tipoDado:   .asciz  "%d"
 
-
 .section .text
 
 .globl _start
@@ -60,17 +59,17 @@ _analisaOpcao:
     cmpl    $1, %eax
     je      _leitura
 
-    # so se ja tiver o conjunto A e B
-    cmpl    $2, %eax
-    je      _uniao
-    cmpl    $3, %eax
-    je      _interseccao
-    cmpl    $4, %eax
-    je      _diferenca
-    cmpl    $5, %eax
-    je      _complementar
-    cmpl    $6, %eax
-    je      _fim
+#    # so se ja tiver o conjunto A e B
+#    cmpl    $2, %eax
+#    je      _uniao
+#    cmpl    $3, %eax
+#    je      _interseccao
+#    cmpl    $4, %eax
+#    je      _diferenca
+#    cmpl    $5, %eax
+#    je      _complementar
+#    cmpl    $6, %eax
+    call      _fim
    
     pushl   $pSeparador
     call    printf 
@@ -82,8 +81,6 @@ _analisaOpcao:
     addl    $12, %esp
     jmp     _start
 
-# modificá-los sempre que quiser. Serão sempre 2 conjunto: A e B.
-# elementos diferente no msm conjunto
 _leitura:
     pushl   $pSeparador
     call    printf
@@ -106,13 +103,21 @@ _leitura:
     pushl   $tipoDado
     call    scanf
 
-    pushl   $nA
-    pushl   $vetorA
+    movl    nA, %eax
+    movl    $4, %ebx
+    mull    %ebx
+    pushl   %eax
     call    malloc
+    movl    %eax, vetorA
 
-    pushl   $nB
-    pushl   $vetorB
+    movl    nB, %eax
+    movl    $4, %ebx
+    mull    %ebx
+    pushl   %eax
     call    malloc
+    movl    %eax, vetorB
+
+    addl    $8, %esp
 
     movl    $1, temVetor
     
@@ -128,7 +133,7 @@ _leitura:
     movl    $1, %ebx
     call    _leVetor
     
-    ret    
+    jmp     _start
 
 _leVetor:
     pushl   %ecx
@@ -151,9 +156,11 @@ _leVetor:
     movl    num, %edx
     movl    %edx, (%edi)
     addl    $4, %edi
-    inc     %ebx
+    incl     %ebx
 
     loop    _leVetor
+
+    ret
 
 _uniao:
 
