@@ -2,14 +2,14 @@
     opcao:      .int    0
     nA:         .int    0
     nB:         .int    0
-    temVetor:   .int    0
+    temConj:    .int    0
     num:        .int    0
 
-    vetorA:     .space  4
-    vetorB:     .space  4
+    conjuntoA:  .space  4
+    conjuntoB:  .space  4
 
     pInicio:    .asciz  "\n\tManipulador de Conjuntos Numericos\n"
-    pMenu:      .asciz  "\n\t\t  MENU\n\t[1] Leitura dos Conjuntos\n\t[2] Encontrar Uniao\n\t[3] Encontrar Inserccao\n\t[4] Encontrar o Complementar\n\t[5] Encontrar o Complementar\n\t[6] Sair\n"
+    pMenu:      .asciz  "\n\t\t  MENU\n\t[1] Leitura dos Conjuntos\n\t[2] Encontrar Uniao\n\t[3] Encontrar Inserccao\n\t[4] Encontrar o Complementar\n\t[5] Encontrar o Complementar\n\t[6] Ver vetores\n\t[7] Sair\n"
     pOpcao:     .asciz  "\nDigite sua opcao => "
     pSeparador: .asciz  "\n--------------------------------------------\n"
     pOpcaoInv:  .asciz  "\tOpcao INVALIDA\n\n\tTente Novamente!"
@@ -17,7 +17,10 @@
     pQtdeA:     .asciz  "Digite a quantidade de elementos no Conjunto A => "
     pQtdeB:     .asciz  "Digite a quantidade de elementos no Conjunto B => "
     pPedeNum:   .asciz  "Digite o %do numero => "
-    
+    pMostraCon: .asciz  "\Conjunto %d lido: "
+    pPulaLinha: .asciz  "\n"
+    pEspaco:    .asciz  "\t"
+
     tipoDado:   .asciz  "%d"
 
 .section .text
@@ -69,7 +72,9 @@ _analisaOpcao:
     cmpl    $5, %eax
     je      _complementar
     cmpl    $6, %eax
-    call      _fim
+    je      _mostraConjuntos
+    cmpl    $7, %eax
+    je      _fim
    
     pushl   $pSeparador
     call    printf 
@@ -87,28 +92,23 @@ _leitura:
     call    _alocaVetor
 
     # leitura dos elementos
-    movl    vetorA, %edi
+    movl    conjuntoA, %edi
     movl    nA, %ecx
     movl    $1, %ebx
     call    _leVetor
 
-    movl    vetorB, %edi
+    movl    conjuntoB, %edi
     movl    nB, %ecx
     movl    $1, %ebx
     call    _leVetor
     
-    movl    $1, temVetor
+    movl    $1, temConj
 
     jmp     _start
 
 _pegaTamanhos:
-    pushl   $pSeparador
-    call    printf
+    call    _opcaoEscolhida
 
-    pushl   opcao            # funcao p isso
-    pushl   $pSelec
-    call    printf
-    
     pushl   $pQtdeA
     call    printf
 
@@ -123,10 +123,21 @@ _pegaTamanhos:
     pushl   $tipoDado
     call    scanf
     
-    addl    $36, %esp
+    addl    $24, %esp
 
     ret
 
+_opcaoEscolhida:
+    pushl   $pSeparador
+    call    printf
+
+    pushl   opcao
+    pushl   $pSelec
+    call    printf
+
+    addl    $12, %esp
+
+    ret
 
 _alocaVetor:
     movl    nA, %eax
@@ -134,14 +145,14 @@ _alocaVetor:
     mull    %ebx
     pushl   %eax
     call    malloc
-    movl    %eax, vetorA
+    movl    %eax, conjuntoA
 
     movl    nB, %eax
     movl    $4, %ebx
     mull    %ebx
     pushl   %eax
     call    malloc
-    movl    %eax, vetorB
+    movl    %eax, conjuntoB
 
     addl    $8, %esp
 
@@ -171,6 +182,45 @@ _leVetor:
     incl    %ebx
 
     loop    _leVetor
+
+    ret
+
+_mostraConjuntos:
+    pushl   $1
+    pushl   $pMostraCon
+    call    printf
+    movl    conjuntoA, %edi
+    movl    nA, %ecx
+    addl    $8, %esp
+    call    _mostraConj 
+
+    pushl   $2
+    pushl   $pMostraCon
+    call    printf
+    movl    conjuntoB, %edi
+    movl    nB, %ecx
+    addl    $8, %esp
+    call    _mostraConj
+
+    jmp     _start
+
+_mostraConj:
+    pushl   %edi
+    pushl   %ecx
+
+    movl    (%edi), %eax
+    pushl   %eax
+    pushl   $tipoDado
+    call    printf
+
+    addl    $8, %esp
+
+    popl    %ecx
+    popl    %edi
+
+    addl    $4, %edi
+
+    loop    _mostraConj
 
     ret
 
