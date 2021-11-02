@@ -16,12 +16,12 @@
     pSelec:     .asciz  "\n\tVoce selecionou a opcao %d!\n"
     pQtdeA:     .asciz  "Digite a quantidade de elementos no Conjunto A => "
     pQtdeB:     .asciz  "Digite a quantidade de elementos no Conjunto B => "
-    pPedeNum:   .asciz  "Digite o %do numero => "
-    pMostraCon: .asciz  "\Conjunto %d lido: "
+    pPedeNum:   .asciz  "Digite o %o numero => "
+    pMostraCon: .asciz  "\Conjunto %c lido:"
     pPulaLinha: .asciz  "\n"
-    pEspaco:    .asciz  "\t"
 
     tipoDado:   .asciz  "%d"
+    tipoDadoEsp:.asciz  " %d"
 
 .section .text
 
@@ -32,6 +32,13 @@ _start:
 
     call    _analisaOpcao
     jmp     _start
+
+_pulaLinha:
+    pushl   $pPulaLinha
+    call    printf
+    addl    $4, %esp
+
+    ret
 
 _menu:
     pushl   $pSeparador
@@ -60,7 +67,7 @@ _analisaOpcao:
     movl    opcao, %eax
 
     cmpl    $1, %eax
-    je      _leitura
+    je      _leConjuntos
 
     # so se ja tiver o conjunto A e B (dps)
     cmpl    $2, %eax
@@ -86,29 +93,31 @@ _analisaOpcao:
     addl    $12, %esp
     jmp     _start
 
-_leitura:
-    call    _pegaTamanhos
-
-    call    _alocaVetor
-
-    # leitura dos elementos
+_leConjuntos:
+    call    _opcaoEscolhida
+    call    _leConjuntoA
+    call    _alocaConjuntoA
+    
     movl    conjuntoA, %edi
     movl    nA, %ecx
     movl    $1, %ebx
-    call    _leVetor
+    call    _leConjunto
+
+    call    _pulaLinha
+
+    call    _leConjuntoB
+    call    _alocaConjuntoB
 
     movl    conjuntoB, %edi
     movl    nB, %ecx
     movl    $1, %ebx
-    call    _leVetor
-    
+    call    _leConjunto
+
     movl    $1, temConj
 
     jmp     _start
 
-_pegaTamanhos:
-    call    _opcaoEscolhida
-
+_leConjuntoA:
     pushl   $pQtdeA
     call    printf
 
@@ -116,14 +125,43 @@ _pegaTamanhos:
     pushl   $tipoDado
     call    scanf
 
+    addl    $12, %esp
+
+    ret
+
+_alocaConjuntoA:
+    movl    nA, %eax
+    movl    $4, %ebx
+    mull    %ebx
+    pushl   %eax
+    call    malloc
+    movl    %eax, conjuntoA
+
+    addl    $4, %esp
+
+    ret
+
+_leConjuntoB:
     pushl   $pQtdeB
     call    printf
 
     pushl   $nB
     pushl   $tipoDado
     call    scanf
-    
-    addl    $24, %esp
+
+    addl    $12, %esp
+
+    ret
+
+_alocaConjuntoB:
+    movl    nB, %eax
+    movl    $4, %ebx
+    mull    %ebx
+    pushl   %eax
+    call    malloc
+    movl    %eax, conjuntoB
+
+    addl    $4, %esp
 
     ret
 
@@ -139,26 +177,7 @@ _opcaoEscolhida:
 
     ret
 
-_alocaVetor:
-    movl    nA, %eax
-    movl    $4, %ebx
-    mull    %ebx
-    pushl   %eax
-    call    malloc
-    movl    %eax, conjuntoA
-
-    movl    nB, %eax
-    movl    $4, %ebx
-    mull    %ebx
-    pushl   %eax
-    call    malloc
-    movl    %eax, conjuntoB
-
-    addl    $8, %esp
-
-    ret
-
-_leVetor:
+_leConjunto:
     pushl   %ecx
     pushl   %edi
     pushl   %ebx
@@ -181,20 +200,22 @@ _leVetor:
     addl    $4, %edi
     incl    %ebx
 
-    loop    _leVetor
+    loop    _leConjunto
 
     ret
 
 _mostraConjuntos:
-    pushl   $1
+    pushl   $'A'
     pushl   $pMostraCon
     call    printf
     movl    conjuntoA, %edi
     movl    nA, %ecx
     addl    $8, %esp
-    call    _mostraConj 
+    call    _mostraConj
 
-    pushl   $2
+    call    _pulaLinha
+
+    pushl   $'B'
     pushl   $pMostraCon
     call    printf
     movl    conjuntoB, %edi
@@ -210,7 +231,7 @@ _mostraConj:
 
     movl    (%edi), %eax
     pushl   %eax
-    pushl   $tipoDado
+    pushl   $tipoDadoEsp
     call    printf
 
     addl    $8, %esp
