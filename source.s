@@ -2,18 +2,21 @@
     opcao:      .int    0
     nA:         .int    0
     nB:         .int    0
-                                # 120 => ate 30 inteiros
-    vetorA:     .space  120     # tem q ser definidor pelo USER
-    vetorB:     .space  120
+    temVetor:   .int    0
+    num:        .int    0
+
+    vetorA:     .space  4
+    vetorB:     .space  4
 
     pInicio:    .asciz  "\n\tManipulador de Conjuntos Numericos\n"
     pMenu:      .asciz  "\n\t\t  MENU\n\t[1] Leitura dos Conjuntos\n\t[2] Encontrar Uniao\n\t[3] Encontrar Inserccao\n\t[4] Encontrar o Complementar\n\t[5] Encontrar o Complementar\n\t[6] Sair\n"
     pOpcao:     .asciz  "\nDigite sua opcao => "
     pSeparador: .asciz  "\n--------------------------------------------\n"
     pOpcaoInv:  .asciz  "\tOpcao INVALIDA\n\n\tTente Novamente!"
-    pSelecionou:.asciz  "\n\tVoce selecionou a opcao %d!\n"
+    pSelec:     .asciz  "\n\tVoce selecionou a opcao %d!\n"
     pQtdeA:     .asciz  "Digite a quantidade de elementos no Conjunto A => "
     pQtdeB:     .asciz  "Digite a quantidade de elementos no Conjunto B => "
+    pPedeNum:   .asciz  "Digite o %do numero => "
     
     tipoDado:   .asciz  "%d"
 
@@ -24,7 +27,9 @@
 _start:
     call    _menu
     call    _leOpcao
-    jmp     _analisaOpcao
+
+    call    _analisaOpcao
+    jmp     _start
 
 _menu:
     pushl   $pSeparador
@@ -32,7 +37,7 @@ _menu:
 
     pushl   $pInicio
     call    printf
-    
+
     pushl   $pMenu
     call    printf
     
@@ -84,7 +89,7 @@ _leitura:
     call    printf
 
     pushl   opcao            # funcao p isso
-    pushl   $pSelecionou
+    pushl   $pSelec
     call    printf
     
     pushl   $pQtdeA
@@ -97,13 +102,58 @@ _leitura:
     pushl   $pQtdeB
     call    printf
 
-    pushl   $nB         # mesma variavel (?)
+    pushl   $nB
     pushl   $tipoDado
     call    scanf
+
+    pushl   $nA
+    pushl   $vetorA
+    call    malloc
+
+    pushl   $nB
+    pushl   $vetorB
+    call    malloc
+
+    movl    $1, temVetor
     
-    addl    $36, %esp
+    addl    $52, %esp
+
+    movl    vetorA, %edi
+    movl    nA, %ecx
+    movl    $1, %ebx
+    call    _leVetor
+
+    movl    vetorB, %edi
+    movl    nB, %ecx
+    movl    $1, %ebx
+    call    _leVetor
     
-    jmp _start    
+    ret    
+
+_leVetor:
+    pushl   %ecx
+    pushl   %edi
+    pushl   %ebx
+
+    pushl   $pPedeNum
+    call    printf
+    addl    $4, %esp
+
+    pushl   $num
+    pushl   $tipoDado
+    call    scanf
+    addl    $8, %esp
+
+    popl    %ebx
+    popl    %edi
+    popl    %ecx
+
+    movl    num, %edx
+    movl    %edx, (%edi)
+    addl    $4, %edi
+    inc     %ebx
+
+    loop    _leVetor
 
 _uniao:
 
