@@ -59,16 +59,16 @@ _analisaOpcao:
     cmpl    $1, %eax
     je      _leitura
 
-#    # so se ja tiver o conjunto A e B
-#    cmpl    $2, %eax
-#    je      _uniao
-#    cmpl    $3, %eax
-#    je      _interseccao
-#    cmpl    $4, %eax
-#    je      _diferenca
-#    cmpl    $5, %eax
-#    je      _complementar
-#    cmpl    $6, %eax
+    # so se ja tiver o conjunto A e B (dps)
+    cmpl    $2, %eax
+    je      _uniao
+    cmpl    $3, %eax
+    je      _interseccao
+    cmpl    $4, %eax
+    je      _diferenca
+    cmpl    $5, %eax
+    je      _complementar
+    cmpl    $6, %eax
     call      _fim
    
     pushl   $pSeparador
@@ -82,6 +82,26 @@ _analisaOpcao:
     jmp     _start
 
 _leitura:
+    call    _pegaTamanhos
+
+    call    _alocaVetor
+
+    # leitura dos elementos
+    movl    vetorA, %edi
+    movl    nA, %ecx
+    movl    $1, %ebx
+    call    _leVetor
+
+    movl    vetorB, %edi
+    movl    nB, %ecx
+    movl    $1, %ebx
+    call    _leVetor
+    
+    movl    $1, temVetor
+
+    jmp     _start
+
+_pegaTamanhos:
     pushl   $pSeparador
     call    printf
 
@@ -102,7 +122,13 @@ _leitura:
     pushl   $nB
     pushl   $tipoDado
     call    scanf
+    
+    addl    $36, %esp
 
+    ret
+
+
+_alocaVetor:
     movl    nA, %eax
     movl    $4, %ebx
     mull    %ebx
@@ -119,21 +145,7 @@ _leitura:
 
     addl    $8, %esp
 
-    movl    $1, temVetor
-    
-    addl    $52, %esp
-
-    movl    vetorA, %edi
-    movl    nA, %ecx
-    movl    $1, %ebx
-    call    _leVetor
-
-    movl    vetorB, %edi
-    movl    nB, %ecx
-    movl    $1, %ebx
-    call    _leVetor
-    
-    jmp     _start
+    ret
 
 _leVetor:
     pushl   %ecx
@@ -156,7 +168,7 @@ _leVetor:
     movl    num, %edx
     movl    %edx, (%edi)
     addl    $4, %edi
-    incl     %ebx
+    incl    %ebx
 
     loop    _leVetor
 
