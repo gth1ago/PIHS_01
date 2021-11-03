@@ -18,7 +18,7 @@
     pQtdeB:     .asciz  "Digite a quantidade de elementos no Conjunto B => "
     pPedeNum:   .asciz  "Digite o %o numero => "
     pMostraCon: .asciz  "\tConjunto %c lido:"
-    pMsgAviso:  .asciz  "\tVoce deve inserir os vetores antes de proceseguir!\n"
+    pMsgAviso:  .asciz  "\tVoce deve inserir os vetores antes de prosseguir!\n"
     pPulaLinha: .asciz  "\n"
 
     tipoDado:   .asciz  "%d"
@@ -230,7 +230,7 @@ _mostraConjuntos:
     call    printf
     movl    conjuntoA, %edi
     movl    nA, %ecx
-    addl    $12, %esp
+    addl    $8, %esp
     call    _mostraConj
 
     call    _pulaLinha
