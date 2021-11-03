@@ -11,13 +11,14 @@
     pInicio:    .asciz  "\n\tManipulador de Conjuntos Numericos\n"
     pMenu:      .asciz  "\n\t\t  MENU\n\t[1] Leitura dos Conjuntos\n\t[2] Encontrar Uniao\n\t[3] Encontrar Inserccao\n\t[4] Encontrar o Complementar\n\t[5] Encontrar o Complementar\n\t[6] Ver vetores\n\t[7] Sair\n"
     pOpcao:     .asciz  "\nDigite sua opcao => "
-    pSeparador: .asciz  "\n--------------------------------------------\n"
+    pSeparador: .asciz  "\n-----------------------------------------------------------\n"
     pOpcaoInv:  .asciz  "\tOpcao INVALIDA\n\n\tTente Novamente!"
-    pSelec:     .asciz  "\n\tVoce selecionou a opcao %d!\n"
+    pSelec:     .asciz  "\n\tVoce selecionou a opcao %d!\n\n"
     pQtdeA:     .asciz  "Digite a quantidade de elementos no Conjunto A => "
     pQtdeB:     .asciz  "Digite a quantidade de elementos no Conjunto B => "
     pPedeNum:   .asciz  "Digite o %o numero => "
-    pMostraCon: .asciz  "\Conjunto %c lido:"
+    pMostraCon: .asciz  "\tConjunto %c lido:"
+    pMsgAviso:  .asciz  "\tVoce deve inserir os vetores antes de proceseguir!\n"
     pPulaLinha: .asciz  "\n"
 
     tipoDado:   .asciz  "%d"
@@ -66,10 +67,17 @@ _leOpcao:
 _analisaOpcao:    
     movl    opcao, %eax
 
+    cmpl    $7, %eax
+    je      _fim
+   
     cmpl    $1, %eax
     je      _leConjuntos
 
-    # so se ja tiver o conjunto A e B (dps)
+    # verifica se ja tem vetor pras proximas opções
+    movl    $0, %ebx            
+    cmpl    temConj, %ebx       
+    je      _semConj
+
     cmpl    $2, %eax
     je      _uniao
     cmpl    $3, %eax
@@ -80,9 +88,7 @@ _analisaOpcao:
     je      _complementar
     cmpl    $6, %eax
     je      _mostraConjuntos
-    cmpl    $7, %eax
-    je      _fim
-   
+    
     pushl   $pSeparador
     call    printf 
     pushl   $pOpcaoInv
@@ -92,6 +98,18 @@ _analisaOpcao:
 
     addl    $12, %esp
     jmp     _start
+
+    ret         # ta tendo o jmp aqui
+
+_semConj:
+    pushl   $pSeparador
+    call    printf
+    call    _pulaLinha
+    pushl   $pMsgAviso
+    call    printf
+
+    addl    $8, %esp
+    ret
 
 _leConjuntos:
     call    _opcaoEscolhida
@@ -205,12 +223,14 @@ _leConjunto:
     ret
 
 _mostraConjuntos:
+    call    _opcaoEscolhida
+
     pushl   $'A'
     pushl   $pMostraCon
     call    printf
     movl    conjuntoA, %edi
     movl    nA, %ecx
-    addl    $8, %esp
+    addl    $12, %esp
     call    _mostraConj
 
     call    _pulaLinha
@@ -246,12 +266,20 @@ _mostraConj:
     ret
 
 _uniao:
+    call    _opcaoEscolhida
+    jmp     _start
 
 _interseccao:
+    call    _opcaoEscolhida
+    jmp     _start
 
 _diferenca:
+    call    _opcaoEscolhida
+    jmp     _start
 
 _complementar:
+    call    _opcaoEscolhida
+    jmp     _start
 
 _fim:
     pushl   $0
