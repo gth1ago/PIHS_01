@@ -79,7 +79,7 @@ _analisaOpcao:
     je      _semConj
 
     cmpl    $2, %eax
-    je      _uniao
+    je      _callUniao
     cmpl    $3, %eax
     je      _interseccao
     cmpl    $4, %eax
@@ -88,18 +88,40 @@ _analisaOpcao:
     je      _complementar
     cmpl    $6, %eax
     je      _mostraConjuntos
-    
+
+    call    _opInvalida
+        
+    ret         # ta tendo o jmp aqui
+
+_callUniao:
+    call    _uniao
+    jmp     _start
+
+_callInterseccao:
+    call     _interseccao
+    jmp     _start
+
+_callDiferenca:
+    call    _diferenca
+    jmp     _start
+
+_callComplementar:
+    call    _complementar
+    jmp     _start
+
+_callMostraConj:
+    call    _mostraConjuntos
+    jmp     _start
+
+_opInvalida:
     pushl   $pSeparador
     call    printf 
     pushl   $pOpcaoInv
     call    printf
-    pushl   $pSeparador
-    call    printf
 
-    addl    $12, %esp
-    jmp     _start
+    addl    $8, %esp
 
-    ret         # ta tendo o jmp aqui
+    ret
 
 _semConj:
     pushl   $pSeparador
@@ -243,7 +265,8 @@ _mostraConjuntos:
     addl    $8, %esp
     call    _mostraConj
 
-    jmp     _start
+    ret
+    #jmp     _start
 
 _mostraConj:
     pushl   %edi
@@ -267,19 +290,23 @@ _mostraConj:
 
 _uniao:
     call    _opcaoEscolhida
-    jmp     _start
+    #jmp     _start
+    ret
 
 _interseccao:
     call    _opcaoEscolhida
-    jmp     _start
+    #jmp     _start
+    ret
 
 _diferenca:
     call    _opcaoEscolhida
-    jmp     _start
+    #jmp     _start
+    ret
 
 _complementar:
     call    _opcaoEscolhida
-    jmp     _start
+    #jmp     _start
+    ret
 
 _fim:
     pushl   $0
