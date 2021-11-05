@@ -17,6 +17,7 @@
     pQtdeA:     .asciz  "Digite a quantidade de elementos no Conjunto A => "
     pQtdeB:     .asciz  "Digite a quantidade de elementos no Conjunto B => "
     pPedeNum:   .asciz  "Digite o %o numero => "
+    pUniao:     .asciz  "\tUniao => "
     pMostraCon: .asciz  "\tConjunto %c lido:"
     pMsgAviso:  .asciz  "\tVoce deve inserir os vetores antes de prosseguir!\n"
     pPulaLinha: .asciz  "\n"
@@ -243,6 +244,8 @@ _leConjunto:
     call    scanf
     addl    $8, %esp
 
+    # verificar se ja nao existe o elemento nesse vetor
+
     popl    %ebx
     popl    %edi
     popl    %ecx
@@ -302,13 +305,59 @@ _mostraConj:
 
 _uniao:
     call    _opcaoEscolhida
+   
+    # verificar se são o mesmo elemento
+    pushl   $pUniao
+    call    printf
+    addl    $4, %esp
+
+    movl    conjuntoA, %edi
+    movl    nA, %ecx
+    call    _mostraConj
+
+    movl    conjuntoB, %edi
+    movl    nB, %ecx
+    call    _mostraConj
+
     #jmp     _start
+
+
     ret
 
 _interseccao:
     call    _opcaoEscolhida
+
+    movl    nA, %ecx
+    movl    conjuntoA, %edi
+    movl    conjuntoB, %esi
+
+_voltaComparaVet:
+    movl    (%edi), %eax
+    movl    (%esi), %ebx
+    cmpl    %ebx, %eax
+    jne     _saoDiferentes
+
+    addl    $4, %edi    
+    addl    $4, %esi
+
+    loop    _voltaComparaVet
+
+_saoIguais:   # só teste rsrs 
+    pushl   $pQtdeA
+    call    printf
+    addl    $4, %esp   
+
     #jmp     _start
+
     ret
+
+_saoDiferentes: # só teste rsrs
+    pushl   $pQtdeB
+    call    printf
+    addl    $4, %esp    
+
+    ret
+
 
 _diferenca:
     call    _opcaoEscolhida
