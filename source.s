@@ -134,6 +134,18 @@ _semConj:
     ret
 
 _leConjuntos:
+    # se ja tem ConjA e B, desaloca com free
+    movl    $0, %ebx            
+    cmpl    temConj, %ebx       
+    je      _segueLeitura
+    
+    pushl   conjuntoA
+    call    free
+    pushl   conjuntoB
+    call    free
+    addl    $8, %esp
+
+_segueLeitura:
     call    _opcaoEscolhida
     call    _leConjuntoA
     call    _alocaConjuntoA
