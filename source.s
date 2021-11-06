@@ -4,13 +4,17 @@
     nB:         .int    0
     temConj:    .int    0
     num:        .int    0
+    temEmB:     .int    0
 
     conjuntoA:  .space  4
     conjuntoB:  .space  4
 
     pInicio:    .asciz  "\n\tManipulador de Conjuntos Numericos\n"
-    pMenu:      .asciz  "\n\t\t  MENU\n\t[1] Leitura dos Conjuntos\n\t[2] Encontrar Uniao\n\t[3] Encontrar Inserccao\n\t[4] Encontrar o Complementar\n\t[5] Encontrar o Complementar\n\t[6] Ver vetores\n\t[7] Sair\n"
+    pMenu:      .asciz  "\n\t\t  MENU\n\t[1] Leitura dos Conjuntos\n\t[2] Encontrar Uniao\n\t[3] Encontrar Inserccao\n\t[4] Encontrar a diferenca\n\t[5] Encontrar o Complementar\n\t[6] Ver vetores\n\t[7] Sair\n"
     pOpcao:     .asciz  "\nDigite sua opcao => "
+    pInter:     .asciz  "\n\tIntersecao => "
+    pDiferenca: .asciz  "\n\tDiferenca de A - B => "
+    pCompl:     .asciz  "\n\tComplementar de A - B => "
     pSeparador: .asciz  "\n-----------------------------------------------------------\n"
     pOpcaoInv:  .asciz  "\tOpcao INVALIDA\n\n\tTente Novamente!"
     pSelec:     .asciz  "\n\tVoce selecionou a opcao %d!\n\n"
@@ -82,7 +86,7 @@ _analisaOpcao:
     cmpl    $2, %eax
     je      _callUniao
     cmpl    $3, %eax
-    je      _interseccao
+    je      _intersecao
     cmpl    $4, %eax
     je      _diferenca
     cmpl    $5, %eax
@@ -99,7 +103,7 @@ _callUniao:
     jmp     _start
 
 _callInterseccao:
-    call     _interseccao
+    call     _intersecao
     jmp     _start
 
 _callDiferenca:
@@ -261,7 +265,19 @@ _leConjunto:
 
 _mostraConjuntos:
     call    _opcaoEscolhida
+    call    _mostraConjA
+    call    _pulaLinha
 
+    pushl   $'B'
+    pushl   $pMostraCon
+    call    printf
+    addl    $8, %esp
+    call    _mostraConjB
+
+    ret
+    #jmp     _start
+
+_mostraConjA:
     pushl   $'A'
     pushl   $pMostraCon
     call    printf
@@ -269,19 +285,14 @@ _mostraConjuntos:
     movl    nA, %ecx
     addl    $8, %esp
     call    _mostraConj
+    ret
 
-    call    _pulaLinha
-
-    pushl   $'B'
-    pushl   $pMostraCon
-    call    printf
+_mostraConjB:
     movl    conjuntoB, %edi
     movl    nB, %ecx
     addl    $8, %esp
     call    _mostraConj
-
     ret
-    #jmp     _start
 
 _mostraConj:
     pushl   %edi
@@ -305,56 +316,114 @@ _mostraConj:
 
 _uniao:
     call    _opcaoEscolhida
-   
-    # verificar se são o mesmo elemento
+
     pushl   $pUniao
     call    printf
     addl    $4, %esp
 
-    movl    conjuntoA, %edi
     movl    nA, %ecx
-    call    _mostraConj
+    movl    conjuntoA, %edi
 
-    movl    conjuntoB, %edi
+_voltaInterA:
+    # printa se o elemento não tiver no conjunto B
+    # depois printa o conjunto B inteiro
+    movl    $0, temEmB
+    movl    (%edi), %eax   
+    pushl   %ecx            # backup
+
     movl    nB, %ecx
-    call    _mostraConj
-
-    #jmp     _start
-
-
-    ret
-
-_interseccao:
-    call    _opcaoEscolhida
-
-    movl    nA, %ecx
-    movl    conjuntoA, %edi
     movl    conjuntoB, %esi
-
-_voltaComparaVet:
-    movl    (%edi), %eax
-    movl    (%esi), %ebx
-    cmpl    %ebx, %eax
-    jne     _saoDiferentes
+    
+    call    _voltaInterB    
+    
+    popl    %ecx
 
     addl    $4, %edi    
+
+    loop    _voltaInterA
+
+    # printa B
+    call    _mostraConjB
+
+    jmp     _start
+
+_voltaInterB:
+    movl    (%esi), %ebx
+    pushl   %ecx            # backups
+    pushl   %eax
+    
+    cmpl    %ebx, %eax
+    jne      _continuaInter
+    movl    $1, temEmB
+
+_continuaInter:
+    popl    %eax  
+    popl    %ecx
+    
     addl    $4, %esi
+    loop    _voltaInterB
 
-    loop    _voltaComparaVet
-
-_saoIguais:   # só teste rsrs 
-    pushl   $pQtdeA
+    cmpl    $0, temEmB
+    jne     _segueUniao
+    pushl   %eax
+    pushl   $tipoDadoEsp    
     call    printf
-    addl    $4, %esp   
+    addl    $8, %esp
 
-    #jmp     _start
+_segueUniao:
+    ret
+
+_intersecao:
+    call    _opcaoEscolhida
+
+    pushl   $pInter
+    call    printf
+    addl    $4, %esp
+
+    movl    nA, %ecx
+    movl    conjuntoA, %edi
+
+_voltaComparaA:
+    # para cada  eax (elemento) de A, verifica o B se tem repetido
+    movl    (%edi), %eax   
+    pushl   %ecx            # backup
+    
+    movl    nB, %ecx
+    movl    conjuntoB, %esi
+    
+    call    _voltaComparaB    
+    
+    popl    %ecx
+
+    addl    $4, %edi    
+
+    loop    _voltaComparaA
+
+    jmp     _start
+
+_voltaComparaB:
+    movl    (%esi), %ebx
+    pushl   %ecx            # backups
+    pushl   %eax
+    
+    cmpl    %ebx, %eax
+    jne      _continua
+    call    _temRepetido
+
+_continua:
+    popl    %eax  
+    popl    %ecx
+    
+    addl    $4, %esi
+    loop    _voltaComparaB
 
     ret
 
-_saoDiferentes: # só teste rsrs
-    pushl   $pQtdeB
-    call    printf
-    addl    $4, %esp    
+_temRepetido:
+    pushl   %ebx
+    pushl   $tipoDadoEsp
+    call    printf 
+    addl    $8, %esp
 
     ret
 
@@ -362,11 +431,113 @@ _saoDiferentes: # só teste rsrs
 _diferenca:
     call    _opcaoEscolhida
     #jmp     _start
+    pushl   $pDiferenca
+    call    printf
+    addl    $4, %esp
+
+    movl    nA, %ecx
+    movl    conjuntoA, %edi
+
+_voltaDiferenca:
+    # printa se o elemento não tiver no conjunto B
+    # depois printa o conjunto B inteiro
+    movl    $0, temEmB
+    movl    (%edi), %eax   
+    pushl   %ecx            # backup
+
+    movl    nB, %ecx
+    movl    conjuntoB, %esi
+    
+    call    _voltaDifB    
+    
+    popl    %ecx
+
+    addl    $4, %edi    
+
+    loop    _voltaDiferenca
+
+    jmp     _start
+
+_voltaDifB:
+    movl    (%esi), %ebx
+    pushl   %ecx            # backups
+    pushl   %eax
+    
+    cmpl    %ebx, %eax
+    jne      _continuaDif
+    movl    $1, temEmB
+
+_continuaDif:
+    popl    %eax  
+    popl    %ecx
+    
+    addl    $4, %esi
+    loop    _voltaDifB
+
+    cmpl    $0, temEmB
+    jne     _segueDif
+    pushl   %eax
+    pushl   $tipoDadoEsp    
+    call    printf
+    addl    $8, %esp
+
+_segueDif:
     ret
+
 
 _complementar:
     call    _opcaoEscolhida
-    #jmp     _start
+    pushl   $pCompl
+    call    printf
+    addl    $4, %esp
+
+    # printa se o elemento de A não tiver em B
+    movl    nA, %ecx
+    movl    conjuntoA, %edi
+
+_voltaComplementar:
+    # printa se o elemento não tiver no conjunto B
+    movl    $0, temEmB
+    movl    (%edi), %eax   
+    pushl   %ecx            # backup
+
+    movl    nB, %ecx
+    movl    conjuntoB, %esi
+    
+    call    _voltaDifB    
+    
+    popl    %ecx
+
+    addl    $4, %edi    
+
+    loop    _voltaComplementar
+
+    jmp     _start
+
+_voltaCompB:
+    movl    (%esi), %ebx
+    pushl   %ecx            # backups
+    pushl   %eax
+    
+    cmpl    %ebx, %eax
+    jne      _continuaComp
+    movl    $1, temEmB
+
+_continuaComp:
+    popl    %eax  
+    popl    %ecx
+    
+    addl    $4, %esi
+    loop    _voltaCompB
+
+    cmpl    $0, temEmB
+    jne     _segueDif
+    pushl   %eax
+    pushl   $tipoDadoEsp    
+    call    printf
+    addl    $8, %esp
+
+_segueComp:
     ret
 
 _fim:
