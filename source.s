@@ -25,6 +25,7 @@
     pUniao:     .asciz  "\tUniao => "
     pMostraCon: .asciz  "\tConjunto %c lido:"
     pMsgAviso:  .asciz  "\tVoce deve inserir os vetores antes de prosseguir!\n"
+    pRepetido:  .asciz  "\nVoce inseriu um elemento repetido. Todos devem ser unicos. Tente novamente.\n"
     pPulaLinha: .asciz  "\n"
 
     tipoDado:   .asciz  "%d"
@@ -256,7 +257,13 @@ _leConjunto:
     popl    %ecx
 
     cmpl    $0, %eax
-    je      _leConjunto
+    jne     _continuarLeConjunto
+    pushl   %ecx
+    call    _deuErrado
+    popl    %ecx
+    jmp     _leConjunto
+
+    _continuarLeConjunto:
 
     movl    num, %edx
     movl    %edx, (%edi)
@@ -264,6 +271,13 @@ _leConjunto:
     incl    %ebx
 
     loop    _leConjunto
+
+    ret
+
+_deuErrado:
+    pushl   $pRepetido
+    call    printf
+    addl    $4, %esp
 
     ret
 
