@@ -11,11 +11,11 @@
     conjuntoB:  .space  4
 
     pInicio:    .asciz  "\n\tManipulador de Conjuntos Numericos\n"
-    pMenu:      .asciz  "\n\t\t  MENU\n\t[1] Leitura dos Conjuntos\n\t[2] Encontrar Uniao\n\t[3] Encontrar Inserccao\n\t[4] Encontrar a diferenca\n\t[5] Encontrar o Complementar\n\t[6] Ver vetores\n\t[7] Sair\n"
+    pMenu:      .asciz  "\n\t\t  MENU\n\t[1] Leitura dos Conjuntos\n\t[2] Encontrar Uniao\n\t[3] Encontrar Inserccao\n\t[4] Encontrar a Diferenca\n\t[5] Encontrar o Complementar\n\t[6] Ver vetores\n\t[7] Sair\n"
     pOpcao:     .asciz  "\nDigite sua opcao => "
     pInter:     .asciz  "\n\tIntersecao => "
     pDiferenca: .asciz  "\n\tDiferenca de A - B => "
-    pCompl:     .asciz  "\n\tComplementar de A - B => "
+    pCompl:     .asciz  "\n\tComplementar de B em relacao a A => "
     pSeparador: .asciz  "\n-----------------------------------------------------------\n"
     pOpcaoInv:  .asciz  "\tOpcao INVALIDA\n\n\tTente Novamente!"
     pSelec:     .asciz  "\n\tVoce selecionou a opcao %d!\n\n"
@@ -26,8 +26,8 @@
     pMostraCon: .asciz  "\tConjunto %c lido:"
     pMsgAviso:  .asciz  "\tVoce deve inserir os vetores antes de prosseguir!\n"
     pRepetido:  .asciz  "\nVoce inseriu um elemento repetido. Todos devem ser unicos. Tente novamente.\n"
-    pTamErr:  .asciz  "\nNao e possivel verificar o complementar de B, o conjunto B é maior que A.\n"
-    pContErr: .asciz  "O conjunto B nao esta contido em A, impossivel calcular o complementar.\n"
+    pTamErr:    .asciz  "\nNao e possivel verificar o complementar de B, o conjunto B é maior que A.\n"
+    pContErr:   .asciz  "O conjunto B nao esta contido em A, impossivel calcular o complementar.\n"
     pPulaLinha: .asciz  "\n"
 
     tipoDado:   .asciz  "%d"
