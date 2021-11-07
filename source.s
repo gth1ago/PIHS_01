@@ -40,9 +40,10 @@ _start:
     call    _menu
     call    _leOpcao
 
-    call    _analisaOpcao
+    call    _analisaOpcao                           # recebe a opcao e faz o call para a opcao escolhida
     jmp     _start
 
+# funcao auxiliar 
 _pulaLinha:
     pushl   $pPulaLinha
     call    printf
@@ -76,6 +77,7 @@ _leOpcao:
 _analisaOpcao:    
     movl    opcao, %eax
 
+    # saida
     cmpl    $7, %eax
     je      _fim
    
@@ -100,8 +102,9 @@ _analisaOpcao:
 
     call    _opInvalida
         
-    ret         # ta tendo o jmp aqui
+    ret
 
+# rotulos para uso de call
 _callUniao:
     call    _uniao
     jmp     _start
@@ -142,12 +145,13 @@ _semConj:
     addl    $8, %esp
     ret
 
+# leitura dos conjuntos (opcao 1)
 _leConjuntos:
-    # se ja tem ConjA e B, desaloca com free
     movl    $0, %ebx            
     cmpl    temConj, %ebx       
     je      _segueLeitura
     
+    # se ja houve leitura de conjuntos, desaloca a memoria com free
     pushl   conjuntoA
     call    free
     pushl   conjuntoB
@@ -276,6 +280,7 @@ _leConjunto:
 
     ret
 
+# funcao auxiliar para se é elemento repetido
 _deuErrado:
     pushl   $pRepetido
     call    printf
@@ -283,6 +288,7 @@ _deuErrado:
 
     ret
 
+# verifica a intersecao
 _insercaoUnica:
     subl    $1, %ebx
     subl    $4, %edi
@@ -302,6 +308,7 @@ _insercaoUnica:
 
     ret
 
+# verifica se é unico
 _verificarUnicidade:
     pushl   %ecx
 
@@ -326,6 +333,7 @@ _verificarUnicidade:
 
     ret
 
+# mostrar os conjuntos (opcao 6)
 _mostraConjuntos:
     call    _opcaoEscolhida
     call    _mostraConjA
@@ -388,11 +396,12 @@ _uniao:
     movl    conjuntoA, %edi
 
 _voltaInterA:
+    # percorre primeiro o A e
     # printa se o elemento não tiver no conjunto B
     # depois printa o conjunto B inteiro
     movl    $0, temEmB
     movl    (%edi), %eax   
-    pushl   %ecx            # backup
+    pushl   %ecx                                # backup
 
     movl    nB, %ecx
     movl    conjuntoB, %esi
@@ -449,7 +458,7 @@ _intersecao:
 _voltaComparaA:
     # para cada  eax (elemento) de A, verifica o B se tem repetido
     movl    (%edi), %eax   
-    pushl   %ecx            # backup
+    pushl   %ecx                                # backup
     
     movl    nB, %ecx
     movl    conjuntoB, %esi
@@ -466,7 +475,7 @@ _voltaComparaA:
 
 _voltaComparaB:
     movl    (%esi), %ebx
-    pushl   %ecx            # backups
+    pushl   %ecx                                # backups
     pushl   %eax
     
     cmpl    %ebx, %eax
@@ -490,7 +499,6 @@ _tamInvalido:
 
     ret
 
-
 _diferenca:
     call    _opcaoEscolhida
     pushl   $pDiferenca
@@ -502,7 +510,7 @@ _diferenca:
 
 _voltaDiferenca:
     # printa se o elemento não tiver no conjunto B
-    # depois printa o conjunto B inteiro
+    
     movl    $0, temEmB
     movl    (%edi), %eax   
     pushl   %ecx            # backup
@@ -522,7 +530,7 @@ _voltaDiferenca:
 
 _voltaDifB:
     movl    (%esi), %ebx
-    pushl   %ecx            # backups
+    pushl   %ecx                                    # backups
     pushl   %eax
     
     cmpl    %ebx, %eax
@@ -548,6 +556,9 @@ _segueDif:
 
 _complementar:
     call    _opcaoEscolhida
+    
+    # verifica se é possivel fazer o complementar de B em relacao a A
+    # B precisa estar contido em A
 
     movl    $nB, %ecx
     pushl   %ecx
@@ -558,7 +569,7 @@ _complementar:
     call    printf
     addl    $4, %esp
 
-    # printa se o elemento de A não tiver em B
+    # printa se o elemento de A não estiver em B
     movl    nA, %ecx
     movl    conjuntoA, %edi
 
@@ -566,7 +577,7 @@ _voltaComplementar:
     # printa se o elemento não tiver no conjunto B
     movl    $0, temEmB
     movl    (%edi), %eax   
-    pushl   %ecx            # backup
+    pushl   %ecx                                    # backup
 
     movl    nB, %ecx
     movl    conjuntoB, %esi
@@ -583,7 +594,7 @@ _voltaComplementar:
 
 _voltaCompB:
     movl    (%esi), %ebx
-    pushl   %ecx            # backups
+    pushl   %ecx                                    # backups
     pushl   %eax
     
     cmpl    %ebx, %eax
@@ -666,6 +677,7 @@ _verificarNumEstaEmA:
 
     ret
 
+# funcao aulixiar - erro pois conj B é maior do que A
 _BNaoEstaContidoEmATamanhoErro:
     pushl   $pTamErr
     call    printf
@@ -673,6 +685,7 @@ _BNaoEstaContidoEmATamanhoErro:
 
     ret
 
+# funcao auxiliar - erro pois conj B nao esta contido em A
 _BNaoEstaContidoEmAContidoErro:
     pushl   $pContErr
     call    printf
@@ -680,6 +693,7 @@ _BNaoEstaContidoEmAContidoErro:
 
     ret
 
+# funcao auxiliar - verificar o tamanho para o complementar
 _verificarTamanhos:
     movl    $0, tamInval
     movl    nA, %eax
