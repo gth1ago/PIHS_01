@@ -1,3 +1,11 @@
+# Trabalho Prático I - Manipulador de Conjuntos Numéricos
+# Disciplina: Prog. Interfac. Hardware E Software (PIHS)
+# Docente: 
+#   Ronaldo Augusto Q. Volpato
+# Discentes: 
+#   Gabriel Thiago H. Santos    RA: 107774
+#   Gustavo Henrique F. Cruz    RA: 109895
+
 .section .data
     opcao:      .int    0
     nA:         .int    0
@@ -147,16 +155,8 @@ _semConj:
 
 # leitura dos conjuntos (opcao 1)
 _leConjuntos:
-    movl    $0, %ebx            
-    cmpl    temConj, %ebx       
-    je      _segueLeitura
-    
-    # se ja houve leitura de conjuntos, desaloca a memoria com free
-    pushl   conjuntoA
-    call    free
-    pushl   conjuntoB
-    call    free
-    addl    $8, %esp
+    # para desalocar vetores usados
+    call    _verificaTemVetor
 
 _segueLeitura:
     call    _opcaoEscolhida
@@ -181,6 +181,20 @@ _segueLeitura:
     movl    $1, temConj
 
     jmp     _start
+
+_verificaTemVetor:
+    movl    $0, %ebx            
+    cmpl    temConj, %ebx       
+    je      _segueConjunto
+    
+    # se ja houve leitura de conjuntos, desaloca a memoria com free
+    pushl   conjuntoA
+    call    free
+    pushl   conjuntoB
+    call    free
+    addl    $8, %esp
+_segueConjunto:
+    ret
 
 _leConjuntoA:
     pushl   $pQtdeA
@@ -513,7 +527,7 @@ _voltaDiferenca:
     
     movl    $0, temEmB
     movl    (%edi), %eax   
-    pushl   %ecx            # backup
+    pushl   %ecx                                    # backup
 
     movl    nB, %ecx
     movl    conjuntoB, %esi
@@ -707,5 +721,8 @@ _continuarVerificarTamanhos:
     ret
 
 _fim:
+    # para desalocar vetores usados
+    call    _verificaTemVetor
+
     pushl   $0
     call    exit
