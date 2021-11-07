@@ -588,7 +588,10 @@ _complementar:
     movl    conjuntoA, %edi
 
 _voltaComplementar:
-    # printa se o elemento não tiver no conjunto B
+    # printa se o elemento não tiver no conjunto A
+    # percorre o conjunto B e para cada elemento de B
+    # percorre e compara com o do conjunto A
+
     movl    $0, temEmB
     movl    (%edi), %eax   
     pushl   %ecx                                    # backup
