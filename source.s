@@ -26,7 +26,8 @@
     pMostraCon: .asciz  "\tConjunto %c lido:"
     pMsgAviso:  .asciz  "\tVoce deve inserir os vetores antes de prosseguir!\n"
     pRepetido:  .asciz  "\nVoce inseriu um elemento repetido. Todos devem ser unicos. Tente novamente.\n"
-    pComplErr:  .asciz  "\nNao e possivel verificar o complementar de B.\n"
+    pTamErr:  .asciz  "\nNao e possivel verificar o complementar de B, o conjunto B é maior que A.\n"
+    pContErr: .asciz  "O conjunto B nao esta contido em A, impossivel calcular o complementar.\n"
     pPulaLinha: .asciz  "\n"
 
     tipoDado:   .asciz  "%d"
@@ -89,13 +90,13 @@ _analisaOpcao:
     cmpl    $2, %eax
     je      _callUniao
     cmpl    $3, %eax
-    je      _intersecao
+    je      _callInterseccao
     cmpl    $4, %eax
-    je      _diferenca
+    je      _callDiferenca
     cmpl    $5, %eax
-    je      _complementar
+    je      _callComplementar
     cmpl    $6, %eax
-    je      _mostraConjuntos
+    je      _callMostraConj
 
     call    _opInvalida
         
@@ -324,7 +325,6 @@ _verificarUnicidade:
     movl    $1, %eax
 
     ret
-
 
 _mostraConjuntos:
     call    _opcaoEscolhida
@@ -610,18 +610,71 @@ _segueComp:
 _VerificarBContidoEmA:
     call    _verificarTamanhos
     
+    movl    conjuntoB, %esi
+    
+    movl    nB, %ecx
+    
     cmpl    $0, tamInval
     je      _continuarVerificarBContidoEmA
-    call    _BNaoEstaContidoEmA
+    call    _BNaoEstaContidoEmATamanhoErro
     jmp     _start
 
 _continuarVerificarBContidoEmA:
+    pushl   %ecx
+    pushl   %esi
 
+    movl    (%esi), %eax
+    movl    nA, %ecx
+    movl    conjuntoA, %edi
+    call    _verificarNumEstaEmA
+
+    popl    %esi
+    popl    %ecx
+
+    cmpl    $1, %eax
+    jne     _ElementoNaoEstaContido
+    call    _BNaoEstaContidoEmAContidoErro
+    jmp     _start
+
+_ElementoNaoEstaContido:
+    addl    $4, %esi
+
+    loop    _continuarVerificarBContidoEmA
 
     ret
 
-_BNaoEstaContidoEmA:
-    pushl   $pComplErr
+_verificarNumEstaEmA:
+    pushl   %ecx
+
+    movl    (%edi), %ebx
+
+    cmpl    %eax, %ebx
+    jne     _continuarVerificarNumEstaEmA
+    popl    %ecx
+    movl    $0, %eax
+    ret
+
+    _continuarVerificarNumEstaEmA:
+
+    popl    %ecx
+
+    addl    $4, %edi
+
+    loop    _verificarNumEstaEmA
+
+    movl    $1, %eax
+
+    ret
+
+_BNaoEstaContidoEmATamanhoErro:
+    pushl   $pTamErr
+    call    printf
+    addl    $4, %esp
+
+    ret
+
+_BNaoEstaContidoEmAContidoErro:
+    pushl   $pContErr
     call    printf
     addl    $4, %esp
 
@@ -633,7 +686,7 @@ _verificarTamanhos:
     movl    nB, %ebx
 
     cmpl    %eax, %ebx
-    jl      _continuarVerificarTamanhos
+    jle     _continuarVerificarTamanhos
     movl    $1, tamInval
 
 _continuarVerificarTamanhos:
