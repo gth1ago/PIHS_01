@@ -5,6 +5,7 @@
     temConj:    .int    0
     num:        .int    0
     temEmB:     .int    0
+    temRepet:   .int    0
 
     conjuntoA:  .space  4
     conjuntoB:  .space  4
@@ -248,11 +249,14 @@ _leConjunto:
     call    scanf
     addl    $8, %esp
 
-    # verificar se ja nao existe o elemento nesse vetor
+    call    _insercaoUnica
 
     popl    %ebx
     popl    %edi
     popl    %ecx
+
+    cmpl    $0, %eax
+    je      _leConjunto
 
     movl    num, %edx
     movl    %edx, (%edi)
@@ -262,6 +266,50 @@ _leConjunto:
     loop    _leConjunto
 
     ret
+
+_insercaoUnica:
+    subl    $1, %ebx
+    subl    $4, %edi
+
+    cmpl    $0, %ebx
+    jne     _continuarInsercaoUnica
+    ret
+
+    _continuarInsercaoUnica:
+
+    pushl   %ecx
+
+    movl    %ebx, %ecx
+    call    _verificarUnicidade
+
+    popl    %ecx
+
+    ret
+
+_verificarUnicidade:
+    pushl   %ecx
+
+    movl    num, %eax
+    movl    (%edi), %ebx
+
+    cmpl    %eax, %ebx
+    jne     _continuarVerificacao
+    popl    %ecx
+    movl    $0, %eax
+    ret
+
+    _continuarVerificacao:
+
+    popl    %ecx
+
+    subl    $4, %edi
+
+    loop    _verificarUnicidade
+
+    movl    $1, %eax
+
+    ret
+
 
 _mostraConjuntos:
     call    _opcaoEscolhida
@@ -391,7 +439,7 @@ _voltaComparaA:
     movl    nB, %ecx
     movl    conjuntoB, %esi
     
-    call    _voltaComparaB    
+    call    _voltaComparaB
     
     popl    %ecx
 
@@ -430,7 +478,6 @@ _temRepetido:
 
 _diferenca:
     call    _opcaoEscolhida
-    #jmp     _start
     pushl   $pDiferenca
     call    printf
     addl    $4, %esp
