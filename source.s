@@ -5,7 +5,7 @@
     temConj:    .int    0
     num:        .int    0
     temEmB:     .int    0
-    temRepet:   .int    0
+    tamInval:   .int    0
 
     conjuntoA:  .space  4
     conjuntoB:  .space  4
@@ -26,6 +26,7 @@
     pMostraCon: .asciz  "\tConjunto %c lido:"
     pMsgAviso:  .asciz  "\tVoce deve inserir os vetores antes de prosseguir!\n"
     pRepetido:  .asciz  "\nVoce inseriu um elemento repetido. Todos devem ser unicos. Tente novamente.\n"
+    pComplErr:  .asciz  "\nNao e possivel verificar o complementar de B.\n"
     pPulaLinha: .asciz  "\n"
 
     tipoDado:   .asciz  "%d"
@@ -470,7 +471,7 @@ _voltaComparaB:
     
     cmpl    %ebx, %eax
     jne      _continua
-    call    _temRepetido
+    call    _tamInvalido
 
 _continua:
     popl    %eax  
@@ -481,7 +482,7 @@ _continua:
 
     ret
 
-_temRepetido:
+_tamInvalido:
     pushl   %ebx
     pushl   $tipoDadoEsp
     call    printf 
@@ -545,9 +546,14 @@ _continuaDif:
 _segueDif:
     ret
 
-
 _complementar:
     call    _opcaoEscolhida
+
+    movl    $nB, %ecx
+    pushl   %ecx
+    call    _VerificarBContidoEmA
+    popl    %ecx
+
     pushl   $pCompl
     call    printf
     addl    $4, %esp
@@ -592,13 +598,45 @@ _continuaComp:
     loop    _voltaCompB
 
     cmpl    $0, temEmB
-    jne     _segueDif
+    jne     _segueComp
     pushl   %eax
     pushl   $tipoDadoEsp    
     call    printf
     addl    $8, %esp
 
 _segueComp:
+    ret
+
+_VerificarBContidoEmA:
+    call    _verificarTamanhos
+    
+    cmpl    $0, tamInval
+    je      _continuarVerificarBContidoEmA
+    call    _BNaoEstaContidoEmA
+    jmp     _start
+
+_continuarVerificarBContidoEmA:
+
+
+    ret
+
+_BNaoEstaContidoEmA:
+    pushl   $pComplErr
+    call    printf
+    addl    $4, %esp
+
+    ret
+
+_verificarTamanhos:
+    movl    $0, tamInval
+    movl    nA, %eax
+    movl    nB, %ebx
+
+    cmpl    %eax, %ebx
+    jl      _continuarVerificarTamanhos
+    movl    $1, tamInval
+
+_continuarVerificarTamanhos:
     ret
 
 _fim:
