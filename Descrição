@@ -1,0 +1,61 @@
+Primeiro Trabalho Prático: MANIPULADOR DE CONJUNTOS NUMÉRICOS
+
+Implementar em linguagem Gnu Assembly para plataforma 32bits, 
+    um programa de manipulação de conjuntos de números inteiros, 
+    que tenha o seguinte menu de opções:
+
+    1 - Leitura dos Conjuntos
+    2 - Encontrar União
+    3 - Encontrar Intersecção
+    4 - Encontrar a Diferença
+    5 - Encontrar o Complementar
+    6 - Sair
+
+Os conjuntos devem ser armazenados em vetores dinâmicos (criados com malloc), 
+    de acordo com o tamanho e elementos fornecidos pelo usuário. Cada conjunto 
+    deverá utilizar um vetor diferente. Cuide para que o usuário não insira elementos 
+    repetidos (impeça-o) em cada conjunto, pois elementos repetidos são o mesmo elemento.
+
+Na opção 1 
+    o usuário deverá fornecer os conjuntos e poderá modificá-los sempre que quiser. 
+    Serão sempre 2 conjunto: A e B. As opções de 2 a 5 deverão ser executadas sobre os conjuntos 
+    lidos mais recentemente (atuais, correntes). 
+
+As opções de 2 a 5 não poderão ser executadas enquanto o usuário não definir os 
+    conjuntos A e B uma primeira vez.
+
+Para cada conjunto o usuário deverá definir o número de elementos (nA e nB)  
+    que irá fornecer. 
+
+As operações de União, Intersecção, Diferença e Complementação 
+    serão realizadas sobre os conjunto A e B que foram lidos. 
+    Após a realização da operação, o programa deverá mostra na tela os 
+    conjuntos de entrada A e B e o conjunto resultante.
+
+Sempre que novos conjuntos forem definidos, os anteriores devem ser dealocados 
+    (usando o comando free) da memória.
+
+EXIGÊNCIAS:
+
+    1) Os trabalhos devem ser feitos individualmente ou no máximo em duplas.
+    2) O código fonte deve ser entregue juntamente com um relatório contendo: 
+        - identificação dos participantes
+        - descrição dos principais módulos desenvolvidos
+        - auto-avaliação do funcionamento (elencar as partes que funcionam corretamente, 
+            as partes que não funcionam corretamente e sob quais circunstancias, 
+            bem como as partes que não foram implementadas). 
+    3) Não compacte os arquivos para entregar. 
+        Entregue separadamente os arquivos fonte e relatório. 
+        O relatório pode estar em word ou pdf. 
+        O arquivo fonte deve estar em assembly montável e linkável. 
+        Caso exista uma regra diferente para a montagem, linkagem ou execução, 
+            deixe explícito como fazer no relatório.
+    4) O programa deve ser estruturado em procedimentos/funções usando call/ret. 
+        Use basicamente as instruções passadas em aula. 
+        Não use instruções complexas desconhecidas e nem faça programas rebuscados 
+            cheios de artimanhas de programação. 
+        Faça uma programação limpa e direta como feito em sala de aula. 
+        JAMAIS tente fazer o programa em linguagem de alto nível e 
+            depois gerar o código intermediário para entregar!
+    5) O código deve ser comentado. 
+    6) Prazo máximo de entrega: 07/Novembro as 23h55min
