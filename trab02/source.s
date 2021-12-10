@@ -1,7 +1,7 @@
 /*
 Arquivo aula 30/11 GravaLeRegistros.s
 Esse programa realiza a gravacao e leitura de registros em um arquivo,usando chamadas ao
-sistema nas funcoes que manipulam arquivo. Por meio de um menu de op��es, o usuario pode
+sistema nas funcoes que manipulam arquivo. Por meio de um menu de opcoes, o usuario pode
 escolher gravar ou mostrar registros. Os registros contem apenas 3 campos, mas poderiam
 ter mais.
 */
@@ -47,7 +47,7 @@ ter mais.
    SYS_CLOSE: 	   .int     6
    SYS_CREAT: 	   .int     8
 
-# Descritores de arquivo para sa�da e entrada padr�o
+# Descritores de arquivo para saida e entrada padrao
 
    STD_OUT: 	   .int     1 # descritor do video
    STD_IN:  	   .int     2 # descritor do teclado
@@ -65,8 +65,8 @@ ter mais.
    O_WRONLY:      .int     0x0001 # somente escrita
    O_RDWR:        .int     0x0002 # leitura e escrita
    O_CREAT:       .int     0x0040 # cria o arquivo na abertura, caso ele n�o exista
-   O_EXCL:        .int     0x0080 # for�a a cria��o
-   O_APPEND:      .int     0x0400 # posiciona o cursor do arquivo no final, para adi��o
+   O_EXCL:        .int     0x0080 # forca a criacao
+   O_APPEND:      .int     0x0400 # posiciona o cursor do arquivo no final, para adicao
    O_TRUNC:       .int     0x0200 # reseta o arquivo aberto, deixando com tamanho 0 (zero)
 
 # Constantes de configuracao do parametro mode da chamada open().
@@ -83,7 +83,7 @@ ter mais.
    S_IROTH:       .int     0x0004 # others have read permission
    S_IWOTH:       .int     0x0002 # others have write permission
    S_IXOTH:       .int     0x0001 # others have execute permission
-   S_NADA:        .int     0x0000 # n�o altera a situa��o
+   S_NADA:        .int     0x0000 # nao altera a situacao
 
 .section .text
 
@@ -92,7 +92,7 @@ _start:
    call     _menuOp
    call     _leOpcao
 
-   call     _analisaOpcao      # recebe a opcao e faz o call para a opcao escolhida
+   call     _analisaOpcao
    jmp      _start
 
 _leOpcao:
