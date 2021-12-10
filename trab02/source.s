@@ -13,22 +13,22 @@ ter mais.
    pOpcao:        .asciz   "\nDigite sua opcao => "
    pPedeNomeArq:  .asciz   "\nEntre com o nome do arquivo de entrada/saida\n> "
 
-   pFim:          .asciz 	"\nFinalizando ...\n>>> Visualize o arquivo!\n\n"
+   pFim:          .asciz   "\nFinalizando ...\n>>> Visualize o arquivo!\n\n"
    pSeparador:    .asciz   "\n-----------------------------------------------------------\n"
 
-   #  txtPedeNome:   .asciz   "\nDigite seu nome => "
-   #  txtPedeProf:   .asciz 	"\nDigite sua profissao => "
-   #  txtPedeSal:    .asciz 	"\nDigite seu salario => "
-   #  txtPedeCpf:    .asciz 	"\nDigite seu CPF => "
-   #  txtPedeIda:    .asciz 	"\nDigite sua idade => "
-   #  txtMostraNome: .asciz 	"\nNome: %s\n"
-   #  txtMostraProf: .asciz 	"\nProfissao: %s\n"
-   #  txtMostraSal:  .asciz 	"\nSalario: R$ %.2lf\n"
-   #  txtMostraCpf:  .asciz 	"\nCPF: %s\n"
-   #  txtMostraIda:  .asciz   "\nIdade: %.0lf anos\n"
-   #  registro:      .space   143 # nome (70), profissao (50), salario (8 = double), idade (3), CPF(12)
-   #  lixo:          .int     0
-   #  tam:           .int     143
+#  txtPedeNome:   .asciz   "\nDigite seu nome => "
+#  txtPedeProf:   .asciz   "\nDigite sua profissao => "
+#  txtPedeSal:    .asciz   "\nDigite seu salario => "
+#  txtPedeCpf:    .asciz   "\nDigite seu CPF => "
+#  txtPedeIda:    .asciz   "\nDigite sua idade => "
+#  txtMostraNome: .asciz   "\nNome: %s\n"
+#  txtMostraProf: .asciz   "\nProfissao: %s\n"
+#  txtMostraSal:  .asciz   "\nSalario: R$ %.2lf\n"
+#  txtMostraCpf:  .asciz   "\nCPF: %s\n"
+#  txtMostraIda:  .asciz   "\nIdade: %.0lf anos\n"
+#  registro:      .space   143 # nome (70), profissao (50), salario (8 = double), idade (3), CPF(12)
+#  lixo:          .int     0
+#  tam:           .int     143
 	
    nomeArq:       .space   50
    opcao:         .int     0
@@ -36,7 +36,7 @@ ter mais.
    dadoFloat:     .asciz   "%lf"
    descritor:     .int     0 # descritor do arquivo de entrada/saida
 
-# As constantes abaixo se referem aos servi�os disponibilizados pelas
+# As constantes abaixo se referem aos servicos disponibilizados pelas
 # chamadas ao sistema, devendo serem passadas no registrador %eax
 
    SYS_EXIT: 	   .int     1
@@ -54,7 +54,7 @@ ter mais.
 
 # Constante usada na chamada exit() para termino normal
 
-   SAIDA_NORMAL: 	.int     0 # codigo de saida bem sucedida
+   SAIDA_NORMAL:  .int     0 # codigo de saida bem sucedida
 
 # Constantes de configuracao do parametro flag da chamada open(). Estes valores
 # sao dependentes de implementacao. Para se ter certeza dos valores corretos, compile o
