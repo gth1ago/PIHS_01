@@ -7,8 +7,7 @@ ter mais.
 */
 
 .section .data
-
-	pInicio: 	   .asciz 	"\n\tPrograma Multiplicador Matricial\n"
+   pInicio:       .asciz   "\n\tPrograma Multiplicador Matricial\n"
    pMenu:         .asciz   "\n\t\t  MENU\n\t[1] Digitar Matrizes\n\t[2] Obter Matrizes de Arquivo\n\t[3] Calcular Produto Matricial\n\t[4] Gravar Matriz Resultante em Arquivo\n\t[5] Sair\n"
 
    pOpcao:        .asciz   "\nDigite sua opcao => "
@@ -31,11 +30,11 @@ ter mais.
 	#  lixo: 		   .int 	   0
 	#  tam: 		      .int  	143
 	
-	nomeArq: 	   .space 	50
-	opcao: 		   .int 	   0
-	dadoInt: 	   .asciz 	"%d"
-	dadoFloat: 	   .asciz 	"%lf"
-	descritor: 	   .int 	   0 # descritor do arquivo de entrada/saida
+	nomeArq: 	   .space   50
+	opcao: 		   .int     0
+	dadoInt: 	   .asciz   "%d"
+	dadoFloat: 	   .asciz   "%lf"
+	descritor: 	   .int     0 # descritor do arquivo de entrada/saida
 
 # As constantes abaixo se referem aos servi�os disponibilizados pelas
 # chamadas ao sistema, devendo serem passadas no registrador %eax
