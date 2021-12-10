@@ -12,7 +12,7 @@
 
 ## To do:
 - [x] Iniciar
-- [ ] Menu
+- [x] Menu
 - [ ] Leitura Matrizes
 - [ ] Leitura Matriz de Arquivo
 - [ ] Gravar Matriz Arquivo
