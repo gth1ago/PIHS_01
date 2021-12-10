@@ -103,37 +103,37 @@ _leOpcao:
    pushl    $dadoInt
    call     scanf 
    
-   addl 	   $12, %esp
+   addl     $12, %esp
    ret
 
 _menuOp:
    pushl    $pSeparador
    call     printf
 
-   pushl 	$pInicio
-   call 	   printf
+   pushl    $pInicio
+   call     printf
 
-   pushl 	$pMenu
-   call 	   printf
+   pushl    $pMenu
+   call     printf
 
-   addl 	   $12, %esp
+   addl     $12, %esp
    ret
 
 _analisaOpcao:
-   movl 	   opcao, %eax
+   movl     opcao, %eax
 
    # saida
    cmpl     $5, %eax
    je       _fim
 
-   cmpl 	   $1, %eax
+   cmpl     $1, %eax
    je       _digitarMatrizes
-   cmpl 	   $2, %eax
-   je 	   _obterMatrizesArquivo
-   cmpl 	   $3, %eax
-   je 	   _calcularProdutoMatricial
-   cmpl 	   $4, %eax
-   je 	   _gravarMatrizResultante
+   cmpl     $2, %eax
+   je       _obterMatrizesArquivo
+   cmpl     $3, %eax
+   je       _calcularProdutoMatricial
+   cmpl     $4, %eax
+   je       _gravarMatrizResultante
 
    ret
 
@@ -151,8 +151,8 @@ _gravarMatrizResultante:
 
 
 _fim:
-   pushl 	$pFim
-   call 	   printf
-   addl 	   $4, %esp
-   pushl 	$0
-   call 	   exit
+   pushl    $pFim
+   call     printf
+   addl     $4, %esp
+   pushl    $0
+   call     exit
