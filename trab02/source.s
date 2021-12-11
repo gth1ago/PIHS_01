@@ -7,34 +7,37 @@ ter mais.
 */
 
 .section .data
+
    pInicio:       .asciz   "\n\tPrograma Multiplicador Matricial\n"
    pMenu:         .asciz   "\n\t\t  MENU\n\t[1] Digitar Matrizes\n\t[2] Obter Matrizes de Arquivo\n\t[3] Calcular Produto Matricial\n\t[4] Gravar Matriz Resultante em Arquivo\n\t[5] Sair\n"
 
    pOpcao:        .asciz   "\nDigite sua opcao => "
    pPedeNomeArq:  .asciz   "\nEntre com o nome do arquivo de entrada/saida\n> "
 
-   pFim:          .asciz   "\nFinalizando ...\n>>> Visualize o arquivo!\n\n"
+   pFim:          .asciz   "\nFinalizando ...\n\tAté =)\n\n"
    pSeparador:    .asciz   "\n-----------------------------------------------------------\n"
+   pSelec:        .asciz   "\n\tVoce selecionou a opcao %d!\n\n"
+   pMatrizL:      .asciz   "Digite a quantidade de linhas da Matriz %c => "
+   pMatrizC:      .asciz   "Digite a quantidade de colunas da Matriz %c => "
+   pMatrizValor:  .asciz   "Digite o valor de [-][%d] => "
 
-#  txtPedeNome:   .asciz   "\nDigite seu nome => "
-#  txtPedeProf:   .asciz   "\nDigite sua profissao => "
-#  txtPedeSal:    .asciz   "\nDigite seu salario => "
-#  txtPedeCpf:    .asciz   "\nDigite seu CPF => "
-#  txtPedeIda:    .asciz   "\nDigite sua idade => "
-#  txtMostraNome: .asciz   "\nNome: %s\n"
-#  txtMostraProf: .asciz   "\nProfissao: %s\n"
-#  txtMostraSal:  .asciz   "\nSalario: R$ %.2lf\n"
-#  txtMostraCpf:  .asciz   "\nCPF: %s\n"
-#  txtMostraIda:  .asciz   "\nIdade: %.0lf anos\n"
-#  registro:      .space   143 # nome (70), profissao (50), salario (8 = double), idade (3), CPF(12)
-#  lixo:          .int     0
-#  tam:           .int     143
-	
+   matrizA:       .space   8
+   matrizB:       .space   8
    nomeArq:       .space   50
+
    opcao:         .int     0
+   xA:            .int     0
+   xB:            .int     0
+   yA:            .int     0
+   yB:            .int     0
+   temMatriz:     .int     0
+   descritor:     .int     0 # descritor do arquivo de entrada/saida
+
+	valor:         .float   0
+
    dadoInt:       .asciz   "%d"
    dadoFloat:     .asciz   "%lf"
-   descritor:     .int     0 # descritor do arquivo de entrada/saida
+   dadoCarac:     .asciz   "%c"
 
 # As constantes abaixo se referem aos servicos disponibilizados pelas
 # chamadas ao sistema, devendo serem passadas no registrador %eax
@@ -137,7 +140,42 @@ _analisaOpcao:
 
    ret
 
+_opcaoEscolhida:
+    pushl   $pSeparador
+    call    printf
+
+    pushl   opcao
+    pushl   $pSelec
+    call    printf
+
+    addl    $12, %esp
+
+    ret
+
+
+# matrizes = Vetor de linha * coluna
 _digitarMatrizes:
+   call     _verificaTemMatriz   # se já tiver, faz o free
+   
+   call     _opcaoEscolhida
+   call     _leTamMatrizA
+   call     _alocaMatrizA
+   # faz leitura
+   movl     matrizA, %edi
+   movl     xA, %eax
+   mull     yA
+   movl     %eax, %ecx        # tamanho total
+   # movl     %edx, 0           # tinha q mostrar linha x
+   movl     $0, %ebx           # mostrar coluna  y
+   
+   # call     _leValoresMatriz # arrumar aq ainda
+   # coloquei no git p ir vendo, fui jantar, é noix
+
+   call     _leTamMatrizB
+   call     _alocaMatrizB
+   # faz leitura
+
+   movl    $1, temMatriz
    ret
 
 _obterMatrizesArquivo:
@@ -149,11 +187,137 @@ _calcularProdutoMatricial:
 _gravarMatrizResultante:
    ret
 
+_leTamMatrizA:
+   # quantidade linhas de A
+   pushl    $'A'
+   pushl    $pMatrizL
+   call     printf
+
+   pushl    $xA
+   pushl    $dadoInt
+   call     scanf
+
+   # quantidade coluna de A
+   pushl    $'A'
+   pushl    $pMatrizC
+   call     printf
+
+   pushl    $yA
+   pushl    $dadoInt
+   call     scanf
+   addl     $32, %esp
+   ret
+
+_leTamMatrizB:
+   # quantidade linhas de B
+   pushl    $'B'
+   pushl    $pMatrizL
+   call     printf
+
+   pushl    $xB
+   pushl    $dadoInt
+   call     scanf
+
+   # quantidade coluna de B
+   pushl    $'B'
+   pushl    $pMatrizC
+   call     printf
+
+   pushl    $yB
+   pushl    $dadoInt
+   call     scanf
+
+   addl     $32, %esp
+   ret
+
+_alocaMatrizA:
+   # multiplica xA * yA para alocação
+   movl     xA, %eax
+   mull     yA
+
+   movl     $8, %ebx     # 8 bytes ponto flutuante se pa
+   mull     %ebx
+
+   pushl    %eax
+   call     malloc
+   movl     %eax, matrizA
+
+   addl     $4, %esp
+   ret
+
+_alocaMatrizB:
+   # multiplica xA * yA para alocação
+   movl     xB, %eax
+   mull     yB
+
+   movl     $8, %ebx
+   mull     %ebx
+
+   pushl    %eax
+   call     malloc
+   movl     %eax, matrizB
+
+   addl     $4, %esp
+   ret
+
+_leValoresMatriz:
+   # >> ta falho algo aq ainda <<
+
+   # backup
+   pushl    %ecx      
+   pushl    %edi
+
+   # para o printf
+   pushl    %ebx
+   # pushl    %eax   # (precisava d + reg p mostra x e y)
+
+   pushl    $pMatrizValor
+   call     printf
+   addl     $4, %esp
+
+   # leitura do float
+   pushl    $valor
+   pushl    $dadoFloat
+   call     scanf 
+   addl     $8, %esp
+
+   # popl     %eax
+   popl     %ebx
+   popl     %edi
+   popl     %ecx
+
+   # cmpl     $0, eax -- nao lembro pra q isso
+   movl     valor, %edx    # armazena no vetor
+   movl     %edx, (%edi)
+   addl     $8, %edi       # vai pro proximo valor
+   
+   # tem q aumenta a linha e a coluna
+   incl     %ebx
+   # incl     %eax
+
+   loop     _leValoresMatriz
+   ret
+
+_verificaTemMatriz:
+   movl     $0, %ebx            
+   cmpl     temMatriz, %ebx       
+   je       _segueMat
+
+   # se ja houve leitura de matriz
+   pushl    matrizA
+   call     free
+   pushl    matrizB
+   call     free
+   addl     $8, %esp
+_segueMat:
+   ret
+
 
 _fim:
+   call     _verificaTemMatriz   # desalocar matrizes
+
    pushl    $pFim
    call     printf
    addl     $4, %esp
    pushl    $0
    call     exit
-   
