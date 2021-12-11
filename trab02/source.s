@@ -9,7 +9,7 @@ ter mais.
 .section .data
 
    pInicio:       .asciz   "\n\tPrograma Multiplicador Matricial\n"
-   pMenu:         .asciz   "\n\t\t  MENU\n\t[1] Digitar Matrizes\n\t[2] Obter Matrizes de Arquivo\n\t[3] Calcular Produto Matricial\n\t[4] Gravar Matriz Resultante em Arquivo\n\t[5] Sair\n"
+   pMenu:         .asciz   "\n\t\t  MENU\n\t[1] Digitar Matrizes\n\t[2] Obter Matrizes de Arquivo\n\t[3] Calcular Produto Matricial\n\t[4] Gravar Matriz Resultante em Arquivo\n\t[5] Ver Matrizes\n\t[6] Sair\n"
 
    pOpcao:        .asciz   "\nDigite sua opcao => "
    pPedeNomeArq:  .asciz   "\nEntre com o nome do arquivo de entrada/saida\n> "
@@ -20,7 +20,11 @@ ter mais.
    pMatrizL:      .asciz   "Digite a quantidade de linhas da Matriz %c => "
    pMatrizC:      .asciz   "Digite a quantidade de colunas da Matriz %c => "
    pMatrizValor:  .asciz   "Digite o valor de [-][%d] => "
-
+   pPulaLinha:    .asciz   "\n"
+   pDadoMatriz:   .asciz   " %.2lf"
+   pMostraMatriz: .asciz   "\tMatriz %c lida => "
+   pAvisoPrint:   .asciz   "\tBom, pra printar ponto flutuante tem mo trampo q nao consegui usar, ae fica 0 pq n ta printando certo, mas creio q a leitura ta td ok.. creio..\n\n"
+   
    matrizA:       .space   8
    matrizB:       .space   8
    nomeArq:       .space   50
@@ -33,7 +37,7 @@ ter mais.
    temMatriz:     .int     0
    descritor:     .int     0 # descritor do arquivo de entrada/saida
 
-	valor:         .float   0
+	valor:         .double  0.0
 
    dadoInt:       .asciz   "%d"
    dadoFloat:     .asciz   "%lf"
@@ -126,7 +130,7 @@ _analisaOpcao:
    movl     opcao, %eax
 
    # saida
-   cmpl     $5, %eax
+   cmpl     $6, %eax
    je       _fim
 
    cmpl     $1, %eax
@@ -137,6 +141,8 @@ _analisaOpcao:
    je       _calcularProdutoMatricial
    cmpl     $4, %eax
    je       _gravarMatrizResultante
+   cmpl     $5, %eax
+   je       _visualizarMatrizes
 
    ret
 
@@ -160,22 +166,31 @@ _digitarMatrizes:
    call     _opcaoEscolhida
    call     _leTamMatrizA
    call     _alocaMatrizA
-   # faz leitura
+   
+   # faz leitura A
    movl     matrizA, %edi
    movl     xA, %eax
    mull     yA
-   movl     %eax, %ecx        # tamanho total
-   # movl     %edx, 0           # tinha q mostrar linha x
-   movl     $0, %ebx           # mostrar coluna  y
+   movl     %eax, %ecx         # tamanho total
+   # movl     %edx, 0          # tinha q mostrar linha x
+   movl     $0, %ebx           # mostrar coluna
    
-   # call     _leValoresMatriz # arrumar aq ainda
-   # coloquei no git p ir vendo, fui jantar, é noix
+   call     _leValoresMatriz
+   call     _pulaLinha
 
    call     _leTamMatrizB
    call     _alocaMatrizB
-   # faz leitura
+   # faz leitura B
+   movl     matrizB, %edi
+   movl     xB, %eax
+   mull     yB
+   movl     %eax, %ecx
+   # movl     %edx, 0
+   movl     $0, %ebx
+   
+   call     _leValoresMatriz
 
-   movl    $1, temMatriz
+   movl     $1, temMatriz
    ret
 
 _obterMatrizesArquivo:
@@ -185,6 +200,21 @@ _calcularProdutoMatricial:
    ret
    
 _gravarMatrizResultante:
+   ret
+
+_visualizarMatrizes:
+   call     _opcaoEscolhida
+
+   # nao sei os jeito certo de puxar e printar ponto flutuante
+   # em <_mostraMatriz>
+   pushl    $pAvisoPrint
+   call     printf
+   addl     $4, %esp
+   # ---
+
+   call     _mostraMatrizA
+   call     _pulaLinha
+   call     _mostraMatrizB
    ret
 
 _leTamMatrizA:
@@ -231,11 +261,11 @@ _leTamMatrizB:
    ret
 
 _alocaMatrizA:
-   # multiplica xA * yA para alocação
+   # multiplica linha x coluna para alocação
    movl     xA, %eax
    mull     yA
-
-   movl     $8, %ebx     # 8 bytes ponto flutuante se pa
+   # multiplica pelo tamanho d ponto flutuante
+   movl     $8, %ebx
    mull     %ebx
 
    pushl    %eax
@@ -246,10 +276,10 @@ _alocaMatrizA:
    ret
 
 _alocaMatrizB:
-   # multiplica xA * yA para alocação
+   # multiplica linha x coluna para alocação
    movl     xB, %eax
    mull     yB
-
+   # multiplica pelo tamanho d ponto flutuante
    movl     $8, %ebx
    mull     %ebx
 
@@ -261,13 +291,11 @@ _alocaMatrizB:
    ret
 
 _leValoresMatriz:
-   # >> ta falho algo aq ainda <<
-
    # backup
    pushl    %ecx      
    pushl    %edi
 
-   # para o printf
+   # index p printar
    pushl    %ebx
    # pushl    %eax   # (precisava d + reg p mostra x e y)
 
@@ -275,27 +303,25 @@ _leValoresMatriz:
    call     printf
    addl     $4, %esp
 
-   # leitura do float
+   # leitura do float/double
    pushl    $valor
    pushl    $dadoFloat
    call     scanf 
    addl     $8, %esp
 
-   # popl     %eax
    popl     %ebx
    popl     %edi
    popl     %ecx
 
-   # cmpl     $0, eax -- nao lembro pra q isso
    movl     valor, %edx    # armazena no vetor
    movl     %edx, (%edi)
    addl     $8, %edi       # vai pro proximo valor
    
    # tem q aumenta a linha e a coluna
    incl     %ebx
-   # incl     %eax
 
    loop     _leValoresMatriz
+
    ret
 
 _verificaTemMatriz:
@@ -312,6 +338,58 @@ _verificaTemMatriz:
 _segueMat:
    ret
 
+# funcao auxiliar 
+_pulaLinha:
+    pushl   $pPulaLinha
+    call    printf
+    addl    $4, %esp
+
+    ret
+
+_mostraMatrizA:
+   pushl    $'A'
+   pushl    $pMostraMatriz
+   call     printf
+   movl     matrizA, %edi
+   movl     xA, %eax
+   mull     yA
+   movl     %eax, %ecx
+   addl     $8, %esp
+   call    _mostraMatriz
+   ret
+
+_mostraMatrizB:
+   pushl    $'B'
+   pushl    $pMostraMatriz
+   call     printf
+   movl     matrizB, %edi
+   movl     xB, %eax
+   mull     yB
+   movl     %eax, %ecx
+   addl     $8, %esp
+   call    _mostraMatriz
+   ret
+
+_mostraMatriz:
+   pushl    %edi
+   pushl    %ecx
+
+   # aqui printa, talvez converter algo pro jeito certo p flutuante
+   movl     (%edi), %eax
+   pushl    %eax
+   pushl    $pDadoMatriz
+   call     printf
+
+   addl     $8, %esp
+
+   popl     %ecx
+   popl     %edi
+
+   addl     $8, %edi
+
+   loop     _mostraMatriz
+
+   ret
 
 _fim:
    call     _verificaTemMatriz   # desalocar matrizes
