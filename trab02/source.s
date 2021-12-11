@@ -9,7 +9,7 @@ ter mais.
 .section .data
 
    pInicio:       .asciz   "\n\tPrograma Multiplicador Matricial\n"
-   pMenu:         .asciz   "\n\t\t  MENU\n\t[1] Digitar Matrizes\n\t[2] Obter Matrizes de Arquivo\n\t[3] Calcular Produto Matricial\n\t[4] Gravar Matriz Resultante em Arquivo\n\t[5] Ver Matrizes\n\t[6] Sair\n"
+   pMenu:         .asciz   "\n\t\t  MENU\n\t[1] Digitar Matrizes\n\t[2] Obter Matrizes de Arquivo\n\t[3] Calcular Produto Matricial\n\t[4] Gravar Matriz Resultante em Arquivo\n\t[5] Determinantes\n\t[6] Ver Matrizes\n\t[7] Sair\n"
 
    pOpcao:        .asciz   "\nDigite sua opcao => "
    pPedeNomeArq:  .asciz   "\nEntre com o nome do arquivo de entrada/saida\n> "
@@ -130,7 +130,7 @@ _analisaOpcao:
    movl     opcao, %eax
 
    # saida
-   cmpl     $6, %eax
+   cmpl     $7, %eax
    je       _fim
 
    cmpl     $1, %eax
@@ -142,6 +142,8 @@ _analisaOpcao:
    cmpl     $4, %eax
    je       _gravarMatrizResultante
    cmpl     $5, %eax
+   je       _obterDeterminantes
+   cmpl     $6, %eax
    je       _visualizarMatrizes
 
    ret
@@ -215,6 +217,9 @@ _visualizarMatrizes:
    call     _mostraMatrizA
    call     _pulaLinha
    call     _mostraMatrizB
+   ret
+
+_obterDeterminantes:
    ret
 
 _leTamMatrizA:
