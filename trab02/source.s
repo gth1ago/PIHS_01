@@ -16,11 +16,11 @@
    pDadoMatriz:   .asciz   " %.2lf\t"
    pMostraMatriz: .asciz   "\tMatriz %c lida => "
    pFaltaMatriz:  .asciz   "\n\tVocê deve entrar com as matrizes primeiro.\n"
-
-   pPrint:        .asciz   "AAAAAAAAAAAAAAAAA"
+   pDimError:     .asciz   "\n\tA quantidade de colunas de A deve ser igual a quantidade de linhas de B\n"
    
    matrizA:       .space   8
    matrizB:       .space   8
+   matrizC:       .space   8
    nomeArq:       .space   50
    dimLida:       .space   80
    valorLido:     .space   8
@@ -33,6 +33,9 @@
    temMatriz:     .int     0
    temArquivo:    .int     0
    descritor:     .int     0 # descritor do arquivo de entrada/saida
+   i:             .int     0
+   j:             .int     0
+   k:             .int     0
 
 	valor:         .double  0.0
 
@@ -157,16 +160,16 @@ _analisaOpcao:
    ret
 
 _opcaoEscolhida:
-    pushl   $pSeparador
-    call    printf
+   pushl   $pSeparador
+   call    printf
 
-    pushl   opcao
-    pushl   $pSelec
-    call    printf
+   pushl   opcao
+   pushl   $pSelec
+   call    printf
 
-    addl    $12, %esp
+   addl    $12, %esp
 
-    ret
+   ret
 
 # matrizes = Vetor de linha * coluna
 _digitarMatrizes:
@@ -214,12 +217,6 @@ _leMatrizArquivoA:
    movl     $dimLida, %ecx
    movl     $80, %edx
    int      $0x80
-   
-   pushl    pPrint
-   call     printf
-
-   addl     $4, %edi
-
 
    ret
 
@@ -255,8 +252,70 @@ _lerArqEntrada:
    ret
 
 _calcularProdutoMatricial:
+   call     _verificarValidade
+   call     _alocaMatrizC
+   call     _efetuarCalculo
+
    ret
+
+_verificarValidade:
+   movl     xB, %eax
+   movl     yA, %ebx
+   cmpl     %eax, %ebx
+   jne      _dimensoesInvalidas
+
+   ret
+
+_dimensoesInvalidas:
+   pushl    $pDimError
+   call     printf
+   addl     $4, %esp
+
+   jmp      _start
+
+_efetuarCalculo:
    
+   movl     xA, %ecx
+   call     _loopExterno
+
+   ret
+
+_loopExterno:
+   pushl    %ecx
+
+   movl     xB, %ecx
+   call     _loopIntermediario
+
+   popl     %ecx
+   incl     i
+   loop     _loopExterno
+   ret
+
+_loopIntermediario:
+   pushl    %ecx
+
+   movl     yB, %ecx
+   call     _loopInterno
+
+   popl     %ecx
+   incl     j
+   loop     _loopIntermediario
+   ret
+
+_loopInterno:
+   pushl    %ecx
+
+   pushl    $i
+   pushl    $j
+   pushl    $pMatrizValor
+   call     printf
+   addl     $12, %esp
+
+   popl     %ecx
+   incl     k
+   loop     _loopInterno   
+   ret
+
 _gravarMatrizResultante:
    ret
 
@@ -337,6 +396,21 @@ _alocaMatrizB:
    pushl    %eax
    call     malloc
    movl     %eax, matrizB
+
+   addl     $4, %esp
+   ret
+
+_alocaMatrizC:
+   # multiplica linha x coluna para alocação
+   movl     xA, %eax
+   mull     yB
+   # multiplica pelo tamanho d ponto flutuante
+   movl     $8, %ebx
+   mull     %ebx
+
+   pushl    %eax
+   call     malloc
+   movl     %eax, matrizC
 
    addl     $4, %esp
    ret
@@ -435,7 +509,9 @@ _verificaTemMatriz:
    call     free
    pushl    matrizB
    call     free
-   addl     $8, %esp
+   pushl    matrizC
+   call     free
+   addl     $12, %esp
 _segueMat:
    ret
 
