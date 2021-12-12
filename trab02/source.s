@@ -1,33 +1,29 @@
-/*
-Arquivo aula 30/11 GravaLeRegistros.s
-Esse programa realiza a gravacao e leitura de registros em um arquivo,usando chamadas ao
-sistema nas funcoes que manipulam arquivo. Por meio de um menu de opcoes, o usuario pode
-escolher gravar ou mostrar registros. Os registros contem apenas 3 campos, mas poderiam
-ter mais.
-*/
-
 .section .data
 
    pInicio:       .asciz   "\n\tPrograma Multiplicador Matricial\n"
-   pMenu:         .asciz   "\n\t\t  MENU\n\t[1] Digitar Matrizes\n\t[2] Obter Matrizes de Arquivo\n\t[3] Calcular Produto Matricial\n\t[4] Gravar Matriz Resultante em Arquivo\n\t[5] Determinantes\n\t[6] Ver Matrizes\n\t[7] Sair\n"
+   pMenu:         .asciz   "\n\t\t  MENU\n\t[1] Digitar Matrizes\n\t[2] Obter Matrizes de Arquivo\n\t[3] Calcular Produto Matricial\n\t[4] Gravar Matriz Resultante em Arquivo\n\t[5] Ver Matrizes\n\t[6] Sair\n"
 
    pOpcao:        .asciz   "\nDigite sua opcao => "
    pPedeNomeArq:  .asciz   "\nEntre com o nome do arquivo de entrada/saida\n> "
-
+   pFimPedeNomeArq:
    pFim:          .asciz   "\nFinalizando ...\n\tAté =)\n\n"
    pSeparador:    .asciz   "\n-----------------------------------------------------------\n"
    pSelec:        .asciz   "\n\tVoce selecionou a opcao %d!\n\n"
    pMatrizL:      .asciz   "Digite a quantidade de linhas da Matriz %c => "
    pMatrizC:      .asciz   "Digite a quantidade de colunas da Matriz %c => "
-   pMatrizValor:  .asciz   "Digite o valor de [-][%d] => "
+   pMatrizValor:  .asciz   "Digite o valor de [%d][%d] => "
    pPulaLinha:    .asciz   "\n"
-   pDadoMatriz:   .asciz   " %.2lf"
+   pDadoMatriz:   .asciz   " %.2lf\t"
    pMostraMatriz: .asciz   "\tMatriz %c lida => "
-   pAvisoPrint:   .asciz   "\tBom, pra printar ponto flutuante tem mo trampo q nao consegui usar, ae fica 0 pq n ta printando certo, mas creio q a leitura ta td ok.. creio..\n\n"
+   pFaltaMatriz:  .asciz   "\n\tVocê deve entrar com as matrizes primeiro.\n"
+
+   pPrint:        .asciz   "AAAAAAAAAAAAAAAAA"
    
    matrizA:       .space   8
    matrizB:       .space   8
    nomeArq:       .space   50
+   dimLida:       .space   80
+   valorLido:     .space   8
 
    opcao:         .int     0
    xA:            .int     0
@@ -35,6 +31,7 @@ ter mais.
    yA:            .int     0
    yB:            .int     0
    temMatriz:     .int     0
+   temArquivo:    .int     0
    descritor:     .int     0 # descritor do arquivo de entrada/saida
 
 	valor:         .double  0.0
@@ -42,6 +39,12 @@ ter mais.
    dadoInt:       .asciz   "%d"
    dadoFloat:     .asciz   "%lf"
    dadoCarac:     .asciz   "%c"
+
+   enter:         .byte    10 # Codigo ascii do pula linha
+   espaco:        .byte    32 # Codigo ascii do espaco em branco
+   NULL:          .byte    0  # Codigo ascii do NULL = '\0'
+
+   .equ tamPedeArqEntrada, pFimPedeNomeArq-pPedeNomeArq
 
 # As constantes abaixo se referem aos servicos disponibilizados pelas
 # chamadas ao sistema, devendo serem passadas no registrador %eax
@@ -63,15 +66,12 @@ ter mais.
 
    SAIDA_NORMAL:  .int     0 # codigo de saida bem sucedida
 
-# Constantes de configuracao do parametro flag da chamada open(). Estes valores
-# sao dependentes de implementacao. Para se ter certeza dos valores corretos, compile o
-# programa no final deste arquivo usando "gcc valoresopen.c -o valoresopen" e execute-o
-# usando "./valoresopen". Caso seja diferente, corrija as definicoes abaixo.
+# Constantes de configuracao do parametro flag da chamada open().
 
    O_RDONLY:      .int     0x0000 # somente leitura
    O_WRONLY:      .int     0x0001 # somente escrita
    O_RDWR:        .int     0x0002 # leitura e escrita
-   O_CREAT:       .int     0x0040 # cria o arquivo na abertura, caso ele n�o exista
+   O_CREAT:       .int     0x0040 # cria o arquivo na abertura, caso ele nao exista
    O_EXCL:        .int     0x0080 # forca a criacao
    O_APPEND:      .int     0x0400 # posiciona o cursor do arquivo no final, para adicao
    O_TRUNC:       .int     0x0200 # reseta o arquivo aberto, deixando com tamanho 0 (zero)
@@ -130,22 +130,30 @@ _analisaOpcao:
    movl     opcao, %eax
 
    # saida
-   cmpl     $7, %eax
+   cmpl     $6, %eax
    je       _fim
+
 
    cmpl     $1, %eax
    je       _digitarMatrizes
    cmpl     $2, %eax
    je       _obterMatrizesArquivo
+   
+   cmpl     $0, temMatriz
+   je       _semMatrizes
+
    cmpl     $3, %eax
    je       _calcularProdutoMatricial
    cmpl     $4, %eax
    je       _gravarMatrizResultante
    cmpl     $5, %eax
-   je       _obterDeterminantes
-   cmpl     $6, %eax
    je       _visualizarMatrizes
+   ret
 
+   _semMatrizes:
+   pushl    $pFaltaMatriz
+   call     printf
+   addl     $4, %esp
    ret
 
 _opcaoEscolhida:
@@ -160,7 +168,6 @@ _opcaoEscolhida:
 
     ret
 
-
 # matrizes = Vetor de linha * coluna
 _digitarMatrizes:
    call     _verificaTemMatriz   # se já tiver, faz o free
@@ -173,11 +180,10 @@ _digitarMatrizes:
    movl     matrizA, %edi
    movl     xA, %eax
    mull     yA
-   movl     %eax, %ecx         # tamanho total
-   # movl     %edx, 0          # tinha q mostrar linha x
-   movl     $0, %ebx           # mostrar coluna
+   movl     %eax, %ecx           # total elementos/iterador
+   movl     $0, %ebx             # contador
    
-   call     _leValoresMatriz
+   call     _leValoresMatrizA
    call     _pulaLinha
 
    call     _leTamMatrizB
@@ -185,17 +191,67 @@ _digitarMatrizes:
    # faz leitura B
    movl     matrizB, %edi
    movl     xB, %eax
-   mull     yB
-   movl     %eax, %ecx
-   # movl     %edx, 0
+   mull     yB                   # total elementos/iterador
+   movl     %eax, %ecx           # contador
    movl     $0, %ebx
-   
-   call     _leValoresMatriz
+   call     _leValoresMatrizB
 
    movl     $1, temMatriz
    ret
 
 _obterMatrizesArquivo:
+   call     _lerArqEntrada
+   call     _leMatrizArquivoA
+
+   movl     $1, temMatriz
+   movl     $1, temArquivo
+
+   ret
+
+_leMatrizArquivoA:
+   movl     SYS_READ, %eax
+   movl     descritor, %ebx
+   movl     $dimLida, %ecx
+   movl     $80, %edx
+   int      $0x80
+   
+   pushl    pPrint
+   call     printf
+
+   addl     $4, %edi
+
+
+   ret
+
+_lerArqEntrada:
+   movl     SYS_WRITE, %eax
+   movl     STD_OUT, %ebx
+   movl     $pPedeNomeArq, %ecx
+   movl     $tamPedeArqEntrada, %edx
+   int      $0x80
+
+   # Le nome do arquivo de entrada
+   movl     SYS_READ, %eax
+   movl     STD_IN, %ebx
+   movl     $nomeArq, %ecx
+   movl     $80, %edx
+   int      $0x80
+
+   # Insere final de string
+   movl     $nomeArq, %edi
+   subl     $1, %eax
+   addl     %eax, %edi
+   movl     NULL, %eax
+   movl     %eax, (%edi)
+
+   # Abre arquivo para leitura
+   movl     SYS_OPEN, %eax
+   movl     $nomeArq, %ebx
+   movl     O_RDONLY, %ecx
+   movl     S_IRUSR, %edx
+   int      $0x80
+   movl     %eax, descritor
+
    ret
 
 _calcularProdutoMatricial:
@@ -207,19 +263,9 @@ _gravarMatrizResultante:
 _visualizarMatrizes:
    call     _opcaoEscolhida
 
-   # nao sei os jeito certo de puxar e printar ponto flutuante
-   # em <_mostraMatriz>
-   pushl    $pAvisoPrint
-   call     printf
-   addl     $4, %esp
-   # ---
-
    call     _mostraMatrizA
    call     _pulaLinha
    call     _mostraMatrizB
-   ret
-
-_obterDeterminantes:
    ret
 
 _leTamMatrizA:
@@ -295,24 +341,33 @@ _alocaMatrizB:
    addl     $4, %esp
    ret
 
-_leValoresMatriz:
+_leValoresMatrizA:
    # backup
    pushl    %ecx      
    pushl    %edi
-
-   # index p printar
    pushl    %ebx
-   # pushl    %eax   # (precisava d + reg p mostra x e y)
+
+   # calculo de linha/coluna para impressao
+   movl     %ebx, %eax
+   xorl     %edx, %edx
+   divl     yA
+   pushl    %edx
+   movl     %ebx, %eax
+   xorl     %edx, %edx
+   divl     yA
+   pushl    %eax
 
    pushl    $pMatrizValor
    call     printf
-   addl     $4, %esp
+   addl     $12, %esp
 
    # leitura do float/double
    pushl    $valor
    pushl    $dadoFloat
    call     scanf 
    addl     $8, %esp
+   fldl     valor
+   fstpl    (%edi)
 
    popl     %ebx
    popl     %edi
@@ -322,10 +377,51 @@ _leValoresMatriz:
    movl     %edx, (%edi)
    addl     $8, %edi       # vai pro proximo valor
    
-   # tem q aumenta a linha e a coluna
    incl     %ebx
 
-   loop     _leValoresMatriz
+   loop     _leValoresMatrizA
+
+   ret
+
+_leValoresMatrizB:
+   # backup
+   pushl    %ecx      
+   pushl    %edi
+   pushl    %ebx
+
+   # calculo de linha/coluna para impressao
+   movl     %ebx, %eax
+   xorl     %edx, %edx
+   divl     yB
+   pushl    %edx
+   movl     %ebx, %eax
+   xorl     %edx, %edx
+   divl     yB
+   pushl    %eax
+
+   pushl    $pMatrizValor
+   call     printf
+   addl     $12, %esp
+
+   # leitura do float/double
+   pushl    $valor
+   pushl    $dadoFloat
+   call     scanf 
+   addl     $8, %esp
+   fldl     valor
+   fstpl    (%edi)
+
+   popl     %ebx
+   popl     %edi
+   popl     %ecx
+
+   movl     valor, %edx    # armazena no vetor
+   movl     %edx, (%edi)
+   addl     $8, %edi       # vai pro proximo valor
+   
+   incl     %ebx
+
+   loop     _leValoresMatrizB
 
    ret
 
@@ -360,7 +456,8 @@ _mostraMatrizA:
    mull     yA
    movl     %eax, %ecx
    addl     $8, %esp
-   call    _mostraMatriz
+   movl     yA, %ebx
+   call     _mostraMatriz
    ret
 
 _mostraMatrizB:
@@ -372,25 +469,36 @@ _mostraMatrizB:
    mull     yB
    movl     %eax, %ecx
    addl     $8, %esp
-   call    _mostraMatriz
+   movl     yB, %ebx
+   call     _mostraMatriz
    ret
 
 _mostraMatriz:
-   pushl    %edi
+   pushl    %ebx              # Tamanho Coluna
+
+   fldl     (%edi)
    pushl    %ecx
 
-   # aqui printa, talvez converter algo pro jeito certo p flutuante
-   movl     (%edi), %eax
-   pushl    %eax
+   movl     %ecx, %eax
+   xorl     %edx, %edx
+   divl     %ebx
+   cmpl     $0, %edx
+   jne      _proximaLinha
+   pushl    $pPulaLinha
+   call     printf
+   addl     $4, %esp
+   _proximaLinha:
+   subl     $8, %esp
+   fstpl    (%esp)
    pushl    $pDadoMatriz
    call     printf
-
-   addl     $8, %esp
+   addl     $12, %esp
 
    popl     %ecx
-   popl     %edi
 
    addl     $8, %edi
+
+   popl     %ebx
 
    loop     _mostraMatriz
 
