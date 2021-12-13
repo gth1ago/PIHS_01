@@ -17,6 +17,7 @@
    pMostraMatriz: .asciz   "\tMatriz %c lida => "
    pFaltaMatriz:  .asciz   "\n\tVocê deve entrar com as matrizes primeiro.\n"
    pDimError:     .asciz   "\n\tA quantidade de colunas de A deve ser igual a quantidade de linhas de B\n"
+   pCalculoFeito: .asciz   "\n\tProduto matricial realizado com sucesso! Imprima as matrizes para ver o resultado.\n"
    
    matrizA:       .space   8
    matrizB:       .space   8
@@ -31,6 +32,7 @@
    yA:            .int     0
    yB:            .int     0
    temMatriz:     .int     0
+   temMatrizC:    .int     0
    temArquivo:    .int     0
    descritor:     .int     0 # descritor do arquivo de entrada/saida
    i:             .int     0
@@ -255,6 +257,16 @@ _calcularProdutoMatricial:
    call     _verificarValidade
    call     _alocaMatrizC
    call     _efetuarCalculo
+   call     _calculoFeito
+
+   movl     $1, temMatrizC
+
+   ret
+
+_calculoFeito:
+   pushl    $pCalculoFeito
+   call     printf
+   addl     $4, %esp
 
    ret
 
@@ -305,11 +317,31 @@ _loopIntermediario:
 _loopInterno:
    pushl    %ecx
 
-   pushl    $i
-   pushl    $j
-   pushl    $pMatrizValor
-   call     printf
-   addl     $12, %esp
+   movl     matrizA, %edi
+   movl     i, %eax
+   mull     yB
+   addl     k, %eax
+   subl     %eax, %edi
+
+   fldl     (%edi)
+
+   movl     matrizB, %esi
+   movl     k, %eax
+   mull     xB
+   addl     j, %eax
+   subl     %eax, %esi
+
+   fmull    (%esi)
+
+   movl     matrizC, %edi
+   movl     i, %eax
+   mull     xB
+   addl     j, %eax
+   subl     %eax, %edi
+
+   faddl    (%edi)
+
+   fstpl    (%edi)
 
    popl     %ecx
    incl     k
@@ -325,6 +357,12 @@ _visualizarMatrizes:
    call     _mostraMatrizA
    call     _pulaLinha
    call     _mostraMatrizB
+   movl     $0, %ebx
+   cmpl     temMatrizC, %ebx
+   je       _finalVisualizarMatrizes
+   call     _pulaLinha
+   call     _mostraMatrizC
+   _finalVisualizarMatrizes:
    ret
 
 _leTamMatrizA:
@@ -542,6 +580,19 @@ _mostraMatrizB:
    call     printf
    movl     matrizB, %edi
    movl     xB, %eax
+   mull     yB
+   movl     %eax, %ecx
+   addl     $8, %esp
+   movl     yB, %ebx
+   call     _mostraMatriz
+   ret
+
+_mostraMatrizC:
+   pushl    $'C'
+   pushl    $pMostraMatriz
+   call     printf
+   movl     matrizC, %edi
+   movl     xA, %eax
    mull     yB
    movl     %eax, %ecx
    addl     $8, %esp
