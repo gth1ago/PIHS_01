@@ -287,6 +287,9 @@ _dimensoesInvalidas:
 
 _efetuarCalculo:
    
+   movl     $0, i
+   movl     $0, j
+   movl     $0, k
    movl     xA, %ecx
    call     _loopExterno
 
@@ -321,7 +324,9 @@ _loopInterno:
    movl     i, %eax
    mull     yB
    addl     k, %eax
-   subl     %eax, %edi
+   movl     $8, %edx
+   mull     %edx
+   addl     %eax, %edi
 
    fldl     (%edi)
 
@@ -329,7 +334,9 @@ _loopInterno:
    movl     k, %eax
    mull     xB
    addl     j, %eax
-   subl     %eax, %esi
+   movl     $8, %edx
+   mull     %edx
+   addl     %eax, %esi
 
    fmull    (%esi)
 
@@ -337,7 +344,9 @@ _loopInterno:
    movl     i, %eax
    mull     xB
    addl     j, %eax
-   subl     %eax, %edi
+   movl     $8, %edx
+   mull     %edx
+   addl     %eax, %edi
 
    faddl    (%edi)
 
@@ -417,10 +426,12 @@ _alocaMatrizA:
    mull     %ebx
 
    pushl    %eax
-   call     malloc
+   movl     $1, %ebx
+   pushl    %ebx
+   call     calloc
    movl     %eax, matrizA
 
-   addl     $4, %esp
+   addl     $8, %esp
    ret
 
 _alocaMatrizB:
@@ -432,10 +443,12 @@ _alocaMatrizB:
    mull     %ebx
 
    pushl    %eax
-   call     malloc
+   movl     $1, %ebx
+   pushl    %ebx
+   call     calloc
    movl     %eax, matrizB
 
-   addl     $4, %esp
+   addl     $8, %esp
    ret
 
 _alocaMatrizC:
@@ -447,10 +460,12 @@ _alocaMatrizC:
    mull     %ebx
 
    pushl    %eax
-   call     malloc
+   movl     $1, %ebx
+   pushl    %ebx
+   call     calloc
    movl     %eax, matrizC
 
-   addl     $4, %esp
+   addl     $8, %esp
    ret
 
 _leValoresMatrizA:
@@ -547,9 +562,7 @@ _verificaTemMatriz:
    call     free
    pushl    matrizB
    call     free
-   pushl    matrizC
-   call     free
-   addl     $12, %esp
+   addl     $8, %esp
 _segueMat:
    ret
 
